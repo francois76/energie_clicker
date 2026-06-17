@@ -1,12 +1,27 @@
-import type { Era } from '../types';
+import type { Energy, Era } from '../types';
+import { ENERGIES, ENERGY_META } from '../data/gameData';
+import { formatEnergyAmount } from '../utils/format';
 
-export function ClickerButton({ era, onClick }: { era: Era; onClick: () => void }) {
+export function ClickerButton({ era, clickYield, onClick }: { era: Era; clickYield: Partial<Record<Energy, number>>; onClick: () => void }) {
   return (
     <section className="panel clicker-panel">
-      <p className="eyebrow">Action manuelle</p>
-      <button className="big-clicker" onClick={onClick} aria-label={era.clickAction.label}>
-        <img src={era.buttonAsset} alt="" />
-      </button>
+      <div className="clicker-main">
+        <button className="big-clicker" onClick={onClick} aria-label={era.clickAction.label}>
+          <img src={era.buttonAsset} alt="" />
+        </button>
+        <div className="click-yield">
+          <p className="eyebrow">Produit par clic kW</p>
+          {ENERGIES.filter((energy) => clickYield[energy]).map((energy) => {
+            const meta = ENERGY_META[energy];
+            return (
+              <span key={energy} style={{ ['--accent' as string]: `var(${meta.cssVar})` }}>
+                <img src={meta.icon} alt="" />
+                +{formatEnergyAmount(clickYield[energy] ?? 0)}
+              </span>
+            );
+          })}
+        </div>
+      </div>
       <h2>{era.clickAction.label}</h2>
       <p className="muted">Le clic reste utile, mais la production automatique doit vite prendre le relais.</p>
     </section>

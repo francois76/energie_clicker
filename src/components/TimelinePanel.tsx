@@ -1,6 +1,6 @@
 import type { Energy, EnergyState, Era, GamePhase, Milestone } from '../types';
 import { ENERGY_META } from '../data/gameData';
-import { formatCountdown, formatRate } from '../utils/format';
+import { formatCountdown, formatPower } from '../utils/format';
 
 type Props = {
   era: Era;
@@ -13,19 +13,17 @@ type Props = {
 };
 
 export function TimelinePanel({ era, nextEra, milestone, isMilestoneVisible, phase, remainingSeconds, energies }: Props) {
+  const panelClass = phase === 'transition'
+    ? 'timeline-panel transition-card'
+    : milestone && isMilestoneVisible
+      ? 'timeline-panel warning-card'
+      : phase === 'finalHold'
+        ? 'timeline-panel success-card'
+        : 'timeline-panel quiet-card';
   return (
-    <section className="panel timeline-panel">
-      <div className="era-strip">
-        <img src={era.asset} alt="" />
-        <div>
-          <p className="eyebrow">Époque actuelle</p>
-          <h2>{era.name}</h2>
-          <p>{era.description}</p>
-        </div>
-      </div>
-
+    <section className={`panel ${panelClass}`}>
       {phase === 'transition' && nextEra ? (
-        <article className="event-card transition-card">
+        <div>
           <p className="eyebrow">Transition automatique</p>
           <h3>Prochaine époque : {nextEra.name}</h3>
           <p className="countdown">Dans {formatCountdown(remainingSeconds)}</p>
@@ -39,40 +37,49 @@ export function TimelinePanel({ era, nextEra, milestone, isMilestoneVisible, pha
               <p>{nextEra.constructionSlots} chantiers en parallèle</p>
             </div>
           </div>
-        </article>
+        </div>
       ) : milestone && isMilestoneVisible ? (
-        <article className="event-card warning-card">
+        <div>
           <p className="eyebrow">Jalon historique</p>
-          <h3>{milestone.name}</h3>
-          <p className="countdown">Impact dans {formatCountdown(remainingSeconds)}</p>
-          <div className="impact-grid">
+          <div className="announcement-title">
+            <h3>{milestone.name}</h3>
+            <span className="countdown">{formatCountdown(remainingSeconds)}</span>
+          </div>
+          <div className="impact-pills">
             {Object.entries(milestone.consumptionDelta).map(([energy, delta]) => {
               const e = energy as Energy;
               const current = energies[e];
               if (!current.unlocked && (delta ?? 0) <= 0) return null;
-              const afterNet = current.productionPerSecond - (current.consumptionPerSecond + (delta ?? 0));
               return (
-                <div key={energy}>
-                  <strong>{ENERGY_META[e].label}</strong>
-                  <p>{delta! >= 0 ? '+' : ''}{delta} demande/s · futur net {formatRate(afterNet, e)}</p>
-                </div>
+                <span className="impact-pill" key={energy} style={{ ['--accent' as string]: `var(${ENERGY_META[e].cssVar})` }}>
+                  <img src={ENERGY_META[e].icon} alt="" />
+                  {delta! >= 0 ? '+' : ''}{formatPower(delta ?? 0)}
+                </span>
               );
             })}
           </div>
-        </article>
+        </div>
       ) : phase === 'finalHold' ? (
-        <article className="event-card success-card">
+        <div>
           <p className="eyebrow">Dernier jalon passé</p>
           <h3>Stabilisation finale</h3>
           <p className="countdown">Tiens encore {formatCountdown(remainingSeconds)}</p>
-        </article>
+        </div>
       ) : (
-        <article className="event-card quiet-card">
-          <p className="eyebrow">Jalon masqué</p>
-          <h3>L’Histoire prépare le prochain choc</h3>
-          <p>Il sera visible avant application. Profite-en pour équilibrer les soldes.</p>
-        </article>
+        <p className="muted small">Aucune annonce immédiate.</p>
       )}
+    </section>
+  );
+}
+
+export function EraPanel({ era }: { era: Era }) {
+  return (
+    <section className="panel era-panel">
+      <img src={era.asset} alt="" />
+      <div>
+        <p className="eyebrow">Phase courante</p>
+        <h2>{era.name}</h2>
+      </div>
     </section>
   );
 }

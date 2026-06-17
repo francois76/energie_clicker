@@ -35,6 +35,7 @@ export type Technology = {
   pollutionPerSecond?: number;
   hiddenPollutionDebtPerSecond?: number;
   pollutionDeltaPerSecond?: number;
+  lifetimeSeconds?: number;
   removable?: boolean;
   maxQuantity?: number;
   tags?: string[];
@@ -57,6 +58,7 @@ export type Upgrade = {
     costMultiplier?: number;
     storageMultiplier?: number;
     clickMultiplier?: number;
+    lifetimeMultiplier?: number;
   };
   appliesTo: 'future' | 'existing' | 'both';
   unlocksRetrofitId?: string;
@@ -88,6 +90,7 @@ export type Era = {
     gain: Partial<Record<Energy, number>>;
   };
   constructionSlots: number;
+  entryConsumptionDelta?: Partial<Record<Energy, number>>;
   technologiesUnlocked: string[];
   milestones: string[];
   transitionAnnouncementSeconds: number;
@@ -121,6 +124,15 @@ export type Construction = {
   remainingSeconds: number;
   totalSeconds: number;
   startedAt: number;
+};
+
+export type OwnedGeneration = {
+  id: string;
+  label: string;
+  quantity: number;
+  upgradeIds: string[];
+  remainingLifetimeSeconds: number;
+  totalLifetimeSeconds: number;
 };
 
 export type GamePhase = 'milestone' | 'transition' | 'finalHold' | 'final' | 'gameOver';

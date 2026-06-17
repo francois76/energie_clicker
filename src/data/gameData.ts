@@ -6,32 +6,32 @@ export const ENERGY_META: Record<Energy, { label: string; short: string; unit: s
   heat: {
     label: 'Chaleur',
     short: 'Chaleur',
-    unit: 'kWhₜ',
-    rateUnit: 'kWhₜ/s',
+    unit: 'kW',
+    rateUnit: 'kW/h',
     icon: '/assets/icons/energy-heat.svg',
     cssVar: '--energy-heat'
   },
   mechanical: {
     label: 'Force mécanique',
     short: 'Force',
-    unit: 'kWhₘ',
-    rateUnit: 'kWhₘ/s',
+    unit: 'kW',
+    rateUnit: 'kW/h',
     icon: '/assets/icons/energy-mechanical.svg',
     cssVar: '--energy-mechanical'
   },
   fuel: {
     label: 'Carburants',
     short: 'Carburants',
-    unit: 'L',
-    rateUnit: 'L/s',
+    unit: 'kW',
+    rateUnit: 'kW/h',
     icon: '/assets/icons/energy-fuel.svg',
     cssVar: '--energy-fuel'
   },
   electricity: {
     label: 'Électricité',
     short: 'Élec.',
-    unit: 'kWhₑ',
-    rateUnit: 'kW',
+    unit: 'kW',
+    rateUnit: 'kW/h',
     icon: '/assets/icons/energy-electricity.svg',
     cssVar: '--energy-electricity'
   }
@@ -52,7 +52,7 @@ export const INITIAL_STOCK_RATIO: Record<Energy, number> = {
 };
 
 export const INITIAL_BASE_CONSUMPTION: Record<Energy, number> = {
-  heat: 0.55,
+  heat: 0.85,
   mechanical: 0,
   fuel: 0,
   electricity: 0
@@ -68,8 +68,8 @@ export const MODE_CONFIG = {
     clickMultiplier: 1,
     costMultiplier: 1,
     buildTimeMultiplier: 1,
-    milestoneImpactMultiplier: 1,
-    passiveGainMultiplier: 1,
+    milestoneImpactMultiplier: 1.75,
+    passiveGainMultiplier: 0.58,
     constructionSlotBonus: 0
   },
   demo: {
@@ -81,8 +81,8 @@ export const MODE_CONFIG = {
     clickMultiplier: 10,
     costMultiplier: 0.38,
     buildTimeMultiplier: 0.28,
-    milestoneImpactMultiplier: 0.28,
-    passiveGainMultiplier: 1.35,
+    milestoneImpactMultiplier: 0.55,
+    passiveGainMultiplier: 0.85,
     constructionSlotBonus: 1
   }
 } as const;
@@ -114,6 +114,7 @@ export const ERAS: Era[] = [
     unlockedEnergies: ['heat', 'mechanical'],
     clickAction: { label: 'Actionner un soufflet', gain: { heat: 1.4, mechanical: 1.2 } },
     constructionSlots: 2,
+    entryConsumptionDelta: { mechanical: 0.9 },
     technologiesUnlocked: ['animal_traction', 'water_mill', 'wind_mill', 'forge', 'optimized_blades'],
     milestones: ['bread_production', 'agricultural_tools'],
     transitionAnnouncementSeconds: 170,
@@ -130,6 +131,7 @@ export const ERAS: Era[] = [
     unlockedEnergies: ['heat', 'mechanical'],
     clickAction: { label: 'Pelleter du charbon', gain: { heat: 3.4, mechanical: 0.8 } },
     constructionSlots: 3,
+    entryConsumptionDelta: { heat: 1.2, mechanical: 2.4 },
     technologiesUnlocked: ['coal_mine', 'boiler', 'steam_engine', 'blast_furnace', 'high_pressure_boiler'],
     milestones: ['mechanized_textile', 'rail_freight'],
     transitionAnnouncementSeconds: 170,
@@ -146,6 +148,7 @@ export const ERAS: Era[] = [
     unlockedEnergies: ['heat', 'mechanical', 'fuel', 'electricity'],
     clickAction: { label: 'Tourner une dynamo', gain: { electricity: 2.4 } },
     constructionSlots: 4,
+    entryConsumptionDelta: { electricity: 1.4, fuel: 1.2 },
     technologiesUnlocked: ['dynamo', 'hydro', 'coal_power_plant', 'early_fuels', 'electric_grid'],
     milestones: ['urban_lighting', 'motorized_transport'],
     transitionAnnouncementSeconds: 170,
@@ -162,6 +165,7 @@ export const ERAS: Era[] = [
     unlockedEnergies: ['heat', 'mechanical', 'fuel', 'electricity'],
     clickAction: { label: 'Lancer une turbine', gain: { electricity: 3.2, heat: 0.8 } },
     constructionSlots: 5,
+    entryConsumptionDelta: { fuel: 3.6, electricity: 3.2, heat: 1.4 },
     technologiesUnlocked: ['refinery', 'gas_power_plant', 'modern_dam', 'nuclear_gen1', 'industrial_filters', 'energy_efficiency'],
     milestones: ['mass_car', 'domestic_appliances', 'modern_heating'],
     transitionAnnouncementSeconds: 170,
@@ -178,6 +182,7 @@ export const ERAS: Era[] = [
     unlockedEnergies: ['heat', 'mechanical', 'fuel', 'electricity'],
     clickAction: { label: 'Optimiser le mix', gain: { electricity: 3.8 } },
     constructionSlots: 6,
+    entryConsumptionDelta: { electricity: 7.2, fuel: -2.2 },
     technologiesUnlocked: ['modern_nuclear', 'solar_farm', 'wind_farm', 'batteries', 'pumped_hydro', 'heat_pumps', 'electric_vehicles', 'smart_grid', 'experimental_fusion'],
     milestones: ['data_centers', 'transport_electrification', 'low_carbon_industry'],
     transitionAnnouncementSeconds: 170,
@@ -411,8 +416,8 @@ export const TECHNOLOGIES: Technology[] = [
     consumptionPerSecond: { mechanical: 0.7 },
     hiddenPollutionDebtPerSecond: 0.012,
     purchaseOptions: [
-      { id: 'charcoal_forge', label: 'Forge au charbon de bois', cost: { heat: 120, mechanical: 38 }, buildTimeSeconds: 15, pollutionDebt: 2 },
-      { id: 'careful_forge', label: 'Forge mieux ventilée', cost: { heat: 160, mechanical: 48 }, buildTimeSeconds: 18, pollutionDebt: 0.8 }
+      { id: 'standard_payment', label: 'Paiement standard', cost: { heat: 120, mechanical: 38 }, buildTimeSeconds: 18, pollutionDebt: 2 },
+      { id: 'larger_payment', label: 'Paiement renforcé', cost: { heat: 160, mechanical: 48 }, buildTimeSeconds: 10, pollutionDebt: 2, requirements: ['wood_reserve'] }
     ],
     removable: true,
     documentaryId: 'tech_forge'
@@ -789,10 +794,10 @@ export const UPGRADES: Upgrade[] = [
     id: 'better_foyer',
     name: 'Foyer amélioré',
     era: 'prehistoire',
-    description: 'Les foyers et feux futurs produisent +25 % de chaleur.',
+    description: 'Les foyers et feux futurs produisent +25 % de chaleur et durent plus longtemps.',
     asset: '/assets/technologies/better_foyer.svg',
     affectsTags: ['fire'],
-    effect: { productionMultiplier: 1.25 },
+    effect: { productionMultiplier: 1.25, lifetimeMultiplier: 1.15 },
     appliesTo: 'both',
     purchaseOptions: [{ id: 'careful_airflow', label: 'Tirage optimisé', cost: { heat: 70 }, buildTimeSeconds: 8 }],
     documentaryId: 'upgrade_efficiency'
@@ -801,10 +806,10 @@ export const UPGRADES: Upgrade[] = [
     id: 'optimized_blades',
     name: 'Pales optimisées',
     era: 'agriculture',
-    description: 'Les moulins produisent +20 % de force mécanique.',
+    description: 'Les moulins produisent +20 % de force mécanique et s’usent moins vite.',
     asset: '/assets/technologies/optimized_blades.svg',
     affectsTags: ['mill'],
-    effect: { productionMultiplier: 1.2 },
+    effect: { productionMultiplier: 1.2, lifetimeMultiplier: 1.2 },
     appliesTo: 'both',
     purchaseOptions: [{ id: 'carpentry', label: 'Charpenterie précise', cost: { heat: 140, mechanical: 70 }, buildTimeSeconds: 14 }]
   },
@@ -823,10 +828,10 @@ export const UPGRADES: Upgrade[] = [
     id: 'industrial_filters',
     name: 'Filtres industriels',
     era: 'trente_glorieuses',
-    description: 'Les moyens fossiles polluent -35 %. Un retrofit dédié pourra être ajouté plus tard.',
+    description: 'Les moyens fossiles polluent -35 % et tiennent mieux dans le temps.',
     asset: '/assets/technologies/industrial_filters.svg',
     affectsTags: ['fossil'],
-    effect: { pollutionMultiplier: 0.65 },
+    effect: { pollutionMultiplier: 0.65, lifetimeMultiplier: 1.25 },
     appliesTo: 'both',
     purchaseOptions: [{ id: 'smoke_filters', label: 'Filtres de fumée', cost: { electricity: 180, mechanical: 280 }, buildTimeSeconds: 40 }],
     documentaryId: 'tech_filters'

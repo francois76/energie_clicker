@@ -10,11 +10,10 @@ export function ConstructionPanel({ constructions }: { constructions: Constructi
       <div className="panel-title-row">
         <div>
           <p className="eyebrow">Chantiers</p>
-          <h2>En cours</h2>
         </div>
       </div>
       {constructions.length === 0 ? (
-        <p className="muted">Aucun chantier. Un jalon peut arriver pendant que tu hésites.</p>
+        <p className="muted small">Aucun chantier.</p>
       ) : (
         <div className="construction-list">
           {constructions.map((construction) => {
@@ -25,7 +24,6 @@ export function ConstructionPanel({ constructions }: { constructions: Constructi
                 <img src={item?.asset} alt="" />
                 <div className="construction-content">
                   <div className="construction-line">
-                    <strong>{item?.name ?? construction.technologyId} ×{construction.quantity}</strong>
                     <span>{formatCountdown(construction.remainingSeconds)}</span>
                   </div>
                   <div className="meter"><span style={{ width: `${Math.max(2, progress * 100)}%` }} /></div>

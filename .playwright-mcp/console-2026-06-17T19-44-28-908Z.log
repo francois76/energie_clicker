@@ -1,0 +1,36 @@
+[  319625ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=2124bd8d:14336
+[ 2309848ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/DocumentaryModal.tsx?t=1781727778711' does not provide an export named 'DocumentaryPanel' @ chrome-extension://gpphkfbcpidddadnkolkpfckpihlkkil/build/installHook.js:0
+[ 2309848ms] [ERROR] [vite] Failed to reload /src/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ chrome-extension://gpphkfbcpidddadnkolkpfckpihlkkil/build/installHook.js:0
+[ 2320599ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/DocumentaryModal.tsx?t=1781727778711' does not provide an export named 'DocumentaryPanel' @ chrome-extension://gpphkfbcpidddadnkolkpfckpihlkkil/build/installHook.js:0
+[ 2320599ms] [ERROR] [vite] Failed to reload /src/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ chrome-extension://gpphkfbcpidddadnkolkpfckpihlkkil/build/installHook.js:0
+[ 2521205ms] [ERROR] React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ App 1. useMemo                    useMemo
+2. useState                   useState
+3. useRef                     useRef
+4. useRef                     useRef
+5. useEffect                  useEffect
+6. useEffect                  useEffect
+7. useMemo                    useMemo
+8. useCallback                useMemo
+ @ chrome-extension://gpphkfbcpidddadnkolkpfckpihlkkil/build/installHook.js:0
+[ 2521211ms] Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=2124bd8d:4326:12)
+    at updateReducer (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=2124bd8d:4417:29)
+    at Object.useState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=2124bd8d:13302:13)
+    at exports.useState (http://127.0.0.1:5173/node_modules/.vite/deps/react-DiA8Tu0S.js?v=24f8b706:750:31)
+    at App (http://127.0.0.1:5173/src/App.tsx?t=1781727990079:24:42)
+    at Object.react_stack_bottom_frame (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=2124bd8d:12867:12)
+    at renderWithHooks (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=2124bd8d:4212:19)
+    at updateFunctionComponent (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=2124bd8d:5568:16)
+    at beginWork (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=2124bd8d:6139:20)
+    at runWithFiberInDEV (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=2124bd8d:850:66)
+[ 2521208ms] [WARNING] %s
+
+%s
+ An error occurred in the <App> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ chrome-extension://gpphkfbcpidddadnkolkpfckpihlkkil/build/installHook.js:0
+[ 3663183ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/favicon.ico:0

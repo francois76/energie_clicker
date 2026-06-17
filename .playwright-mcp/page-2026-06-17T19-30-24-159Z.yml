@@ -1,0 +1,125 @@
+- main [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button "Vitesse" [ref=e7] [cursor=pointer]: ×1
+        - button "Pause" [ref=e8] [cursor=pointer]: ⏸
+        - button "Réinitialiser" [ref=e9] [cursor=pointer]: ↻
+      - generic [ref=e10]:
+        - paragraph [ref=e11]: Énergie Clicker
+        - heading "Feu" [level=1] [ref=e12]
+        - paragraph [ref=e13]: "Préhistoire : feu et chaleur"
+      - generic [ref=e14]:
+        - generic [ref=e15]: Mode normal
+        - generic [ref=e16]: 1/1 slots libres
+    - generic [ref=e17]:
+      - 'heading "Préhistoire : feu et chaleur" [level=2] [ref=e20]'
+      - article [ref=e21]:
+        - paragraph [ref=e22]: Jalon masqué
+        - heading "L’Histoire prépare le prochain choc" [level=3] [ref=e23]
+        - paragraph [ref=e24]: Il sera visible avant application. Profite-en pour équilibrer les soldes.
+    - generic [ref=e25]:
+      - paragraph [ref=e26]: Documentation
+      - heading "Feu et chaleur" [level=2] [ref=e27]
+      - paragraph [ref=e28]: "Le début du jeu réduit volontairement l’énergie à la chaleur : cuisson, chauffage et protection. C’est une simplification assumée pour apprendre la boucle clicker sans noyer le joueur."
+      - generic [ref=e29]:
+        - strong [ref=e30]: Gameplay
+        - paragraph [ref=e31]: Surveille surtout le stock de chaleur et construis du buffer avant les jalons.
+  - generic [ref=e32]:
+    - generic [ref=e33]:
+      - generic [ref=e35]:
+        - paragraph [ref=e36]: Jauges
+        - heading "Ressources" [level=2] [ref=e37]
+      - table [ref=e39]:
+        - rowgroup [ref=e40]:
+          - row "Stockage Production Consommation Delta" [ref=e41]:
+            - columnheader "Stockage" [ref=e42]
+            - columnheader "Production" [ref=e43]
+            - columnheader "Consommation" [ref=e44]
+            - columnheader "Delta" [ref=e45]
+        - rowgroup [ref=e46]:
+          - row "Chaleur 54.0 kWh / 120 kWh 0.0 kW 0.8 kW -0.8 kW" [ref=e47]:
+            - cell "Chaleur 54.0 kWh / 120 kWh" [ref=e48]:
+              - generic [ref=e51]:
+                - strong [ref=e52]: Chaleur
+                - generic [ref=e53]: 54.0 kWh / 120 kWh
+            - cell "0.0 kW" [ref=e56]
+            - cell "0.8 kW" [ref=e57]
+            - cell "-0.8 kW" [ref=e58]:
+              - strong [ref=e59]: "-0.8 kW"
+    - generic [ref=e60]:
+      - generic [ref=e61]:
+        - button "Frotter du bois" [ref=e62] [cursor=pointer]
+        - generic [ref=e63]:
+          - paragraph [ref=e64]: Produit par clic
+          - generic [ref=e65]: +2.2 kWh
+      - heading "Frotter du bois" [level=2] [ref=e66]
+      - paragraph [ref=e67]: Le clic reste utile, mais la production automatique doit vite prendre le relais.
+    - generic [ref=e68]:
+      - generic [ref=e70]:
+        - paragraph [ref=e71]: Parc réel
+        - heading "Moyens de production" [level=2] [ref=e72]
+      - paragraph [ref=e73]: Aucun moyen construit.
+    - generic [ref=e74]:
+      - generic [ref=e76]:
+        - paragraph [ref=e77]: Chantiers
+        - heading "En cours" [level=2] [ref=e78]
+      - paragraph [ref=e79]: Aucun chantier. Un jalon peut arriver pendant que tu hésites.
+  - generic [ref=e81]:
+    - generic [ref=e82]:
+      - generic [ref=e83]:
+        - paragraph [ref=e84]: Boutique
+        - heading "Technologies" [level=2] [ref=e85]
+      - paragraph [ref=e86]: 0/1 slots occupés
+    - tablist [ref=e87]:
+      - button "Production" [ref=e88] [cursor=pointer]
+      - button "Stockage" [ref=e89] [cursor=pointer]
+      - button "Améliorations" [ref=e90] [cursor=pointer]
+      - button "Conversions" [ref=e91] [cursor=pointer]
+      - button "Démantèlement" [ref=e92] [cursor=pointer]
+    - generic [ref=e93]:
+      - article [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - heading "Feu de camp" [level=3] [ref=e97]
+            - generic [ref=e98]: ×0
+          - paragraph [ref=e99]: Production de chaleur fragile mais très rapide à construire.
+          - generic [ref=e100]:
+            - generic [ref=e101]: Produit
+            - generic [ref=e103]: 1.4 kW
+        - button "Bois sec 2.0 s 10.0 kWh" [ref=e105] [cursor=pointer]:
+          - generic [ref=e106]:
+            - strong [ref=e107]: Bois sec
+            - generic [ref=e108]: 2.0 s
+          - generic [ref=e110]: 10.0 kWh
+      - article [ref=e111]:
+        - generic [ref=e112]:
+          - generic [ref=e113]:
+            - heading "Foyer" [level=3] [ref=e114]
+            - generic [ref=e115]: ×0
+          - paragraph [ref=e116]: Meilleur rendement que le feu de camp, bon socle de début de partie.
+          - generic [ref=e117]:
+            - generic [ref=e118]: Produit
+            - generic [ref=e120]: 3.2 kW
+        - button "Pierres et braises 4.0 s 28.0 kWh" [ref=e122] [cursor=pointer]:
+          - generic [ref=e123]:
+            - strong [ref=e124]: Pierres et braises
+            - generic [ref=e125]: 4.0 s
+          - generic [ref=e127]: 28.0 kWh
+      - article [ref=e128]:
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - heading "Charbon de bois" [level=3] [ref=e131]
+            - generic [ref=e132]: ×0
+          - paragraph [ref=e133]: Plus dense que le bois, avec un léger coût environnemental caché.
+          - generic [ref=e134]:
+            - generic [ref=e135]: Produit
+            - generic [ref=e137]: 5.2 kW
+        - button "Meule lente 8.0 s 55.0 kWh Ressources insuffisantes" [disabled] [ref=e139]:
+          - generic [ref=e140]:
+            - strong [ref=e141]: Meule lente
+            - generic [ref=e142]: 8.0 s
+          - generic [ref=e144]: 55.0 kWh
+          - generic [ref=e145]: Ressources insuffisantes
+  - complementary [ref=e146]:
+    - button "Debug" [ref=e147] [cursor=pointer]

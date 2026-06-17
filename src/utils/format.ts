@@ -20,6 +20,20 @@ export function formatRate(value: number, energy: Energy): string {
   return `${sign}${formatNumber(value)} ${ENERGY_META[energy].rateUnit}`;
 }
 
+export function formatEnergyAmount(value: number): string {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `${formatNumber(value / 1_000_000)} GW`;
+  if (abs >= 1_000) return `${formatNumber(value / 1_000)} MW`;
+  return `${formatNumber(value)} kW`;
+}
+
+export function formatPower(value: number): string {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `${formatNumber(value / 1_000_000)} GW/h`;
+  if (abs >= 1_000) return `${formatNumber(value / 1_000)} MW/h`;
+  return `${formatNumber(value)} kW/h`;
+}
+
 export function formatCountdown(seconds: number): string {
   const safe = Math.max(0, Math.ceil(seconds));
   const min = Math.floor(safe / 60);
