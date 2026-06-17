@@ -1,0 +1,13 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128' role='img' aria-hidden='true'>
+
+  <defs>
+    <filter id='shadow' x='-20%' y='-20%' width='140%' height='140%'><feDropShadow dx='0' dy='6' stdDeviation='5' flood-color='#27313f' flood-opacity='.12'/></filter>
+    <style><![CDATA[
+      .stroke{stroke:#334155;stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;}
+      .thin{stroke:#334155;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;}
+      .soft{opacity:.72;}
+    ]]></style>
+  </defs>
+
+<circle cx='64' cy='64' r='54' fill='#EEF7FA'/><rect class='stroke' x='28' y='53' width='72' height='47' rx='12' fill='#FFFDF8'/><circle class='thin' cx='64' cy='76' r='15' fill='#8FB3FF'/><path class='thin' fill='none' d='M64 61v30M49 76h30M88 34l13-13M99 35l-12-12'/>
+</svg>

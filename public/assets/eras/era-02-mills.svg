@@ -1,0 +1,20 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 220' role='img' aria-hidden='true'>
+
+  <defs>
+    <filter id='shadow' x='-20%' y='-20%' width='140%' height='140%'><feDropShadow dx='0' dy='6' stdDeviation='5' flood-color='#27313f' flood-opacity='.12'/></filter>
+    <style><![CDATA[
+      .stroke{stroke:#334155;stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;}
+      .thin{stroke:#334155;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;}
+      .soft{opacity:.72;}
+    ]]></style>
+  </defs>
+
+
+<rect width='320' height='220' rx='34' fill='#EEF8F2'/>
+<path d='M0 157c48-30 91-18 132-24 68-10 107-47 188-23v110H0z' fill='#CFE7D7'/>
+<path class='stroke' fill='#FFFDF8' d='M122 95h58l9 80h-76z'/>
+<circle class='stroke' cx='151' cy='78' r='16' fill='#91C7B1'/>
+<g class='thin' fill='#F6D7A8'><path d='M151 61V22l11 33z'/><path d='M168 79h42l-36 10z'/><path d='M150 95v42l-10-36z'/><path d='M134 77H92l36-10z'/></g>
+<path class='stroke' fill='none' d='M38 181c24-20 48-20 72 0M207 181c24-20 48-20 72 0'/>
+
+</svg>

@@ -1,0 +1,22 @@
+{
+  "palette": {
+    "background": "#f7f3ea",
+    "panel": "rgba(255,255,255,0.82)",
+    "ink": "#27313f",
+    "muted": "#6c7684",
+    "heat": "#ff9f7a",
+    "mechanical": "#91c7b1",
+    "fuel": "#c7a17a",
+    "electricity": "#8fb3ff",
+    "pollution": "#b0a7bd",
+    "danger": "#d85a5a",
+    "success": "#3e9d78"
+  },
+  "shape": {
+    "largeRadius": "30px",
+    "mediumRadius": "20px",
+    "smallRadius": "14px",
+    "strokeWidthSvg": 5.5
+  },
+  "visualLanguage": "pastel semi-flat, thick rounded strokes, soft shadows, no photorealism"
+}

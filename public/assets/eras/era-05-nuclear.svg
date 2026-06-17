@@ -1,0 +1,21 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 220' role='img' aria-hidden='true'>
+
+  <defs>
+    <filter id='shadow' x='-20%' y='-20%' width='140%' height='140%'><feDropShadow dx='0' dy='6' stdDeviation='5' flood-color='#27313f' flood-opacity='.12'/></filter>
+    <style><![CDATA[
+      .stroke{stroke:#334155;stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;}
+      .thin{stroke:#334155;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;}
+      .soft{opacity:.72;}
+    ]]></style>
+  </defs>
+
+
+<rect width='320' height='220' rx='34' fill='#F2F8F5'/>
+<path d='M0 169c62-22 99-9 151-18 74-13 110-40 169-18v87H0z' fill='#D7EDE3'/>
+<path class='stroke' fill='#FFFDF8' d='M94 79c24 29 29 62 18 99h-56c-10-37-5-70 18-99z'/>
+<path class='stroke' fill='#FFFDF8' d='M219 79c24 29 29 62 18 99h-56c-10-37-5-70 18-99z'/>
+<circle class='stroke' cx='154' cy='103' r='32' fill='#8FB3FF'/>
+<path class='thin' fill='none' d='M154 75v56M130 117l48-28M130 89l48 28'/>
+<path class='stroke' fill='#91C7B1' d='M124 168h61v22h-61z'/>
+
+</svg>

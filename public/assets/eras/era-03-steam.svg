@@ -1,0 +1,22 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 220' role='img' aria-hidden='true'>
+
+  <defs>
+    <filter id='shadow' x='-20%' y='-20%' width='140%' height='140%'><feDropShadow dx='0' dy='6' stdDeviation='5' flood-color='#27313f' flood-opacity='.12'/></filter>
+    <style><![CDATA[
+      .stroke{stroke:#334155;stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;}
+      .thin{stroke:#334155;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;}
+      .soft{opacity:.72;}
+    ]]></style>
+  </defs>
+
+
+<rect width='320' height='220' rx='34' fill='#F2ECE4'/>
+<path d='M0 164c63-23 104-11 152-17 65-9 102-36 168-12v85H0z' fill='#D8C9B8'/>
+<path class='stroke' fill='#C7A17A' d='M72 128h150v44H72z'/>
+<path class='stroke' fill='#91C7B1' d='M94 99h72v29H94z'/>
+<path class='stroke' fill='#FF9F7A' d='M200 85h35v87h-35z'/>
+<circle class='stroke' cx='101' cy='173' r='19' fill='#EBD8BF'/><circle class='stroke' cx='191' cy='173' r='19' fill='#EBD8BF'/>
+<path class='thin' fill='none' d='M218 70c-8-16 12-18 3-34M234 67c-7-14 12-18 5-32'/>
+<path class='thin' fill='none' d='M67 99H36M264 172h30'/>
+
+</svg>
