@@ -28,7 +28,7 @@ export function EndOverlay({ state, onRefuel, onReset }: { state: EndState; onRe
   return (
     <div className="modal-backdrop end-backdrop">
       <dialog open className={`end-modal ${isFinal ? 'success' : 'failure'}`}>
-        <img src={isFinal ? '/assets/eras/era-06-future.svg' : '/assets/icons/pollution.svg'} alt="" />
+        <img src={isFinal ? 'assets/eras/era-06-future.svg' : 'assets/icons/pollution.svg'} alt="" />
         <p className="eyebrow">{isFinal ? 'Écran final' : 'Crise'}</p>
         <h2>{isFinal ? 'Vous avez traversé l’histoire énergétique française.' : 'Effondrement énergétique'}</h2>
         <p>

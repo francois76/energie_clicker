@@ -63,7 +63,7 @@ export function ResourcePanel({ energies, pollution, pollutionRate, pollutionVis
                 <td>
                   <span className="resource-storage">
                     <span className="resource-name">
-                      <img src="/assets/icons/pollution.svg" alt="" />
+                      <img src="assets/icons/pollution.svg" alt="" />
                       <span>
                         <strong>Pollution</strong>
                         <small>{formatNumber(pollution, 1)} % / seuil 100 %</small>
