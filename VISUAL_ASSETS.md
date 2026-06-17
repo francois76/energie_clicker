@@ -2,7 +2,7 @@
 
 ## Intention
 
-Le POC doit rester “clicker-first” : les visuels servent à identifier vite une époque, une énergie ou un danger. Pas de carte, pas de simulation réseau, pas d’illustration réaliste complexe.
+Le jeu doit rester “clicker-first” : les visuels servent à identifier vite une époque, une énergie ou un danger. Pas de carte, pas de simulation réseau, pas d’illustration réaliste complexe.
 
 Style retenu :
 

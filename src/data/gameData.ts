@@ -395,7 +395,7 @@ export const TECHNOLOGIES: Technology[] = [
     name: 'Moulin à vent',
     era: 'agriculture',
     kind: 'producer',
-    description: 'Un peu moins stable que l’eau dans ce POC, mais très utile.',
+    description: 'Un peu moins stable que l’eau dans cette version, mais très utile.',
     asset: '/assets/technologies/wind_mill.svg',
     tags: ['mechanical', 'wind', 'mill'],
     productionPerSecond: { mechanical: 4.4 },
@@ -682,7 +682,7 @@ export const TECHNOLOGIES: Technology[] = [
     name: 'Parc solaire',
     era: 'moderne_futur',
     kind: 'producer',
-    description: 'Bas-carbone rapide à déployer, mais puissance unitaire modérée dans ce POC.',
+    description: 'Bas-carbone rapide à déployer, mais puissance unitaire modérée dans cette version.',
     asset: '/assets/technologies/solar_farm.svg',
     tags: ['electricity', 'renewable', 'low-carbon'],
     productionPerSecond: { electricity: 28 },
@@ -876,7 +876,7 @@ export const DOCUMENTARIES: Record<string, Documentary> = {
   era_electricite_petrole: {
     id: 'era_electricite_petrole',
     title: 'Électricité et pétrole',
-    body: 'Le POC introduit l’électricité et les carburants au même moment pour éviter un récit trop linéaire. Les deux deviennent centraux dans les usages modernes.',
+    body: 'Le jeu introduit l’électricité et les carburants au même moment pour éviter un récit trop linéaire. Les deux deviennent centraux dans les usages modernes.',
     gameplay: 'Les carburants stockent très bien. L’électricité devient vite la jauge la plus tendue.'
   },
   era_trente_glorieuses: {
@@ -988,7 +988,7 @@ export const DOCUMENTARIES: Record<string, Documentary> = {
   tech_foyer: {
     id: 'tech_foyer',
     title: 'Foyer domestique',
-    body: 'Le foyer canalise la chaleur et stabilise les usages. Le POC l’utilise comme premier vrai producteur efficace.',
+    body: 'Le foyer canalise la chaleur et stabilise les usages. Le jeu l’utilise comme premier vrai producteur efficace.',
     gameplay: 'Bon achat avant “Habitat chauffé”.'
   },
   tech_storage: {
@@ -1054,7 +1054,7 @@ export const DOCUMENTARIES: Record<string, Documentary> = {
   tech_grid: {
     id: 'tech_grid',
     title: 'Réseau électrique simplifié',
-    body: 'Le POC ne simule pas un réseau RTE : il représente seulement la capacité à encaisser et distribuer davantage d’électricité.',
+    body: 'Le jeu ne simule pas un réseau RTE : il représente seulement la capacité à encaisser et distribuer davantage d’électricité.',
     gameplay: 'Augmente la capacité électrique, pas la production.'
   },
   tech_refinery: {
@@ -1116,7 +1116,7 @@ export const DOCUMENTARIES: Record<string, Documentary> = {
   tech_electric_vehicles: {
     id: 'tech_electric_vehicles',
     title: 'Véhicules électriques',
-    body: 'Dans ce POC, les véhicules électriques sont une conversion : moins de carburants, plus d’électricité.',
+    body: 'Dans le jeu, les véhicules électriques sont une conversion : moins de carburants, plus d’électricité.',
     gameplay: 'Attends un solde électrique confortable avant d’enchaîner.'
   },
   tech_smart_grid: {
@@ -1134,7 +1134,7 @@ export const DOCUMENTARIES: Record<string, Documentary> = {
   upgrade_efficiency: {
     id: 'upgrade_efficiency',
     title: 'Amélioration de rendement',
-    body: 'Les améliorations rendent l’anticipation rentable. Ici, elles s’appliquent aux producteurs existants et futurs pour le POC.',
+    body: 'Les améliorations rendent l’anticipation rentable. Ici, elles s’appliquent aux producteurs existants et futurs pour garder une boucle lisible.',
     gameplay: 'Acheter tôt évite de multiplier les constructions.'
   }
 };

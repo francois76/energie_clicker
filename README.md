@@ -1,6 +1,6 @@
-# Énergie Clicker — POC
+# Énergie Clicker
 
-Un POC de jeu web statique inspiré de Cookie Clicker, centré sur l’histoire énergétique française.
+Un jeu web statique inspiré de Cookie Clicker, centré sur l’histoire énergétique française.
 
 Le joueur clique pour produire une énergie cohérente avec l’époque, achète des technologies avec ses stocks d’énergie, anticipe des jalons historiques automatiques et survit à deux risques : crise énergétique et crise pollution.
 
@@ -139,7 +139,7 @@ Les technologies peuvent être :
 - `conversion` — déplace une demande d’une énergie vers une autre ;
 - `retrofit` — prévu dans le modèle, à enrichir ensuite.
 
-Le POC inclut :
+Le jeu inclut :
 
 - foyers, réserves de bois ;
 - moulins, forge ;
@@ -207,13 +207,13 @@ src/styles.css
 public/assets/*
 ```
 
-## Limites connues du POC
+## Limites connues
 
 - Les chiffres ne sont pas calibrés historiquement ; ils sont calibrés pour créer une tension de jeu.
 - Le réseau électrique n’est pas simulé.
 - Les intermittences renouvelables ne sont pas modélisées finement.
 - Le stockage est simplifié.
-- Les upgrades s’appliquent aux existants et futurs dans ce POC, pour garder une boucle lisible.
+- Les upgrades s’appliquent aux existants et futurs pour garder une boucle lisible.
 - Les retrofits sont prévus dans les types mais pas encore séparés en parcours complet.
 - Les sources historiques sont citées dans certains encarts, mais les valeurs de gameplay restent fictionnelles.
 

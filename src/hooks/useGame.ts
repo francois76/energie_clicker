@@ -45,7 +45,7 @@ type GameState = {
   finalShownAt: number | null;
 };
 
-const SAVE_KEY = 'energie-clicker-poc-save-v1';
+const SAVE_KEY = 'energie-clicker-save-v1';
 const SPEEDS = [1, 3, 10] as const;
 
 const itemById = new Map<string, Item>(ALL_ITEMS.map((item) => [item.id, item]));
