@@ -1,8 +1,9 @@
-import type { Energy, EnergyState, GameMode, OwnedGeneration } from '../types';
-import { ENERGIES, ENERGY_META, TECHNOLOGIES } from '../data/gameData';
+import type { Construction, Energy, EnergyState, GameMode, OwnedGeneration } from '../types';
+import { ALL_ITEMS, ENERGIES, ENERGY_META, TECHNOLOGIES } from '../data/gameData';
 import { formatCountdown, formatPower } from '../utils/format';
 
 const techById = new Map(TECHNOLOGIES.map((tech) => [tech.id, tech]));
+const itemById = new Map(ALL_ITEMS.map((item) => [item.id, item]));
 
 function getLevelLabel(label: string) {
   if (label === 'Avant amélioration' || label === 'Génération initiale') return 'niv.1';
@@ -11,12 +12,16 @@ function getLevelLabel(label: string) {
 
 export function ProductionFleetPanel({
   ownedGenerations,
+  constructions,
+  slotsAvailable,
   mode,
   energies,
   demoGeneratorPower,
   onDemoGeneratorPowerChange
 }: {
   ownedGenerations: Record<string, OwnedGeneration[]>;
+  constructions: Construction[];
+  slotsAvailable: number;
   mode: GameMode;
   energies: Record<Energy, EnergyState>;
   demoGeneratorPower: number;
@@ -50,13 +55,42 @@ export function ProductionFleetPanel({
   }
 
   const rows = [...grouped.values()].sort((a, b) => a.remainingLifetimeSeconds - b.remainingLifetimeSeconds);
+  const totalSlots = slotsAvailable;
+  const freeSlots = Math.max(0, totalSlots - constructions.length);
+  const constructionSlots = Array.from({ length: totalSlots }, (_, index) => constructions[index] ?? null);
 
   return (
     <section className="panel fleet-panel">
       <div className="panel-title-row">
         <div>
-          <p className="eyebrow">Parc réel</p>
-          <h2>Moyens de production</h2>
+          <p className="eyebrow">Parc</p>
+        </div>
+      </div>
+      <div className="construction-slots-block">
+        <div className="fleet-section-head">
+          <strong>Chantiers</strong>
+          <span>{freeSlots} libre{freeSlots > 1 ? 's' : ''}</span>
+        </div>
+        <div className="construction-slots">
+          {constructionSlots.map((construction, index) => {
+            if (!construction) {
+              return (
+                <div className="construction-slot construction-slot-free" key={`free-${index}`}>
+                  <span>Libre</span>
+                </div>
+              );
+            }
+            const item = itemById.get(construction.technologyId);
+            const progress = 1 - construction.remainingSeconds / construction.totalSeconds;
+            return (
+              <article className="construction-slot construction-slot-busy" key={construction.id}>
+                <img src={item?.asset} alt="" />
+                <strong>{construction.optionId === 'dismantle' ? 'Démontage' : item?.name}</strong>
+                <span>{formatCountdown(construction.remainingSeconds)}</span>
+                <div className="meter"><span style={{ width: `${Math.max(2, progress * 100)}%` }} /></div>
+              </article>
+            );
+          })}
         </div>
       </div>
       {mode === 'demo' && (
@@ -87,6 +121,11 @@ export function ProductionFleetPanel({
       {rows.length === 0 ? (
         <p className="muted empty-shop">Aucun moyen construit.</p>
       ) : (
+        <>
+        <div className="fleet-section-head fleet-assets-head">
+          <strong>Installations</strong>
+          <span>{rows.length}</span>
+        </div>
         <div className="fleet-list">
           {rows.map((row) => {
             const ratio = row.totalLifetimeSeconds > 0 ? row.remainingLifetimeSeconds / row.totalLifetimeSeconds : 0;
@@ -105,6 +144,7 @@ export function ProductionFleetPanel({
             );
           })}
         </div>
+        </>
       )}
     </section>
   );

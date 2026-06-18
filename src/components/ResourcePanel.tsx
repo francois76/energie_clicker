@@ -16,7 +16,6 @@ export function ResourcePanel({ energies, pollution, pollutionRate, pollutionVis
       <div className="panel-title-row">
         <div>
           <p className="eyebrow">Jauges</p>
-          <h2>Ressources</h2>
         </div>
       </div>
       <div className="resources-grid">

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { ClickerButton } from './components/ClickerButton';
-import { ConstructionPanel } from './components/ConstructionPanel';
 import { DebugPanel } from './components/DebugPanel';
 import { DocumentaryModal, RulesPanel } from './components/DocumentaryModal';
 import { EndOverlay } from './components/EndOverlay';
@@ -36,24 +35,8 @@ export default function App() {
     <main className="app-shell">
       <aside className="info-column">
         <header className="hero-card">
-          <div className="time-controls">
-            <button onClick={game.actions.cycleSpeed} aria-label="Vitesse">×{game.state.speed}</button>
-            <button onClick={() => setConfirmReset(true)} aria-label="Difficulté">{game.state.mode === 'demo' ? 'Démo' : 'Normal'}</button>
-            <button onClick={game.actions.togglePause} aria-label={game.state.paused ? 'Reprendre' : 'Pause'}>
-              {game.state.paused ? '▶' : '⏸'}
-            </button>
-            <button
-              onClick={() => {
-                game.actions.reset();
-                setShowWelcome(true);
-              }}
-              aria-label="Réinitialiser"
-            >
-              ↻
-            </button>
-          </div>
+          <img className="app-logo" src="assets/branding/app-logo.svg" alt="" />
           <div className="hero-copy">
-            <p className="eyebrow">Énergie Clicker</p>
             <h1>Énergie Clicker</h1>
           </div>
         </header>
@@ -68,6 +51,43 @@ export default function App() {
           energies={game.state.energies}
         />
         <RulesPanel />
+        <footer className="sidebar-footer">
+          <section className="panel global-actions">
+            <p className="eyebrow">Actions</p>
+            <div className="time-controls">
+              <button onClick={game.actions.cycleSpeed} aria-label="Vitesse">
+                <span>Vitesse</span>
+                <strong>×{game.state.speed}</strong>
+              </button>
+              <button onClick={() => setConfirmReset(true)} aria-label="Difficulté">
+                <span>Mode</span>
+                <strong>{game.state.mode === 'demo' ? 'Démo' : 'Normal'}</strong>
+              </button>
+              <button onClick={game.actions.togglePause} aria-label={game.state.paused ? 'Reprendre' : 'Pause'}>
+                <span>{game.state.paused ? 'Reprendre' : 'Pause'}</span>
+                <strong>{game.state.paused ? '▶' : '⏸'}</strong>
+              </button>
+              <button
+                onClick={() => {
+                  game.actions.reset();
+                  setShowWelcome(true);
+                }}
+                aria-label="Réinitialiser"
+              >
+                <span>Reset</span>
+                <strong>↻</strong>
+              </button>
+            </div>
+          </section>
+          <section className="panel thanks-panel">
+            <p className="eyebrow">Remerciements</p>
+            <div className="partner-logos" aria-label="Hackathon organisé par Defend Intelligence en partenariat avec Engie et OpenAI">
+              <img src="assets/branding/defend-intelligence.png" alt="Defend Intelligence" />
+              <img src="assets/branding/engie.svg" alt="Engie" />
+              <img src="assets/branding/openai.svg" alt="OpenAI" />
+            </div>
+          </section>
+        </footer>
       </aside>
 
       <section className="production-column">
@@ -81,6 +101,8 @@ export default function App() {
         <ClickerButton era={game.currentEra} clickYield={game.clickYield} onClick={game.actions.click} />
         <ProductionFleetPanel
           ownedGenerations={game.state.ownedGenerations}
+          constructions={game.state.constructions}
+          slotsAvailable={game.availableSlots}
           mode={game.state.mode}
           energies={game.state.energies}
           demoGeneratorPower={game.state.demoGeneratorPower}
@@ -104,19 +126,18 @@ export default function App() {
           getOptionCost={game.actions.getOptionCost}
           canAfford={game.actions.canAfford}
         />
-        <ConstructionPanel constructions={game.state.constructions} />
       </section>
 
       {showDebug && <DebugPanel state={game.state} debug={game.actions.debug} />}
 
-      {!showWelcome && !debugFreeze && (
+      {!showWelcome && (
         <EndOverlay
           state={game.state}
           onReset={game.actions.reset}
         />
       )}
 
-      {!showWelcome && !debugFreeze && <DocumentaryModal documentary={game.activeDocumentary} context={game.activeDocumentaryContext} onClose={game.actions.closeDocumentary} />}
+      {!showWelcome && <DocumentaryModal documentary={game.activeDocumentary} context={game.activeDocumentaryContext} onClose={game.actions.closeDocumentary} />}
 
       {confirmReset && (
         <div className="modal-backdrop" onMouseDown={() => setConfirmReset(false)}>

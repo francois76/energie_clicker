@@ -34,6 +34,15 @@ export function DocumentaryModal({ documentary, context, onClose }: { documentar
         <button className="icon-button floating-close" onClick={onClose} aria-label="Fermer">×</button>
         <p className="eyebrow">Événement historique</p>
         <h2>{enrichedDocumentary.title}</h2>
+        <p className="documentary-body">{enrichedDocumentary.body}</p>
+        {enrichedDocumentary.sourceUrl && (
+          <p className="modal-source">
+            <span>Source :</span>
+            <a className="source-link" href={enrichedDocumentary.sourceUrl} target="_blank" rel="noreferrer">
+              {enrichedDocumentary.sourceLabel ?? enrichedDocumentary.sourceUrl}
+            </a>
+          </p>
+        )}
         <div className="event-modal-grid">
           {context?.consumptionDelta && Object.keys(context.consumptionDelta).length > 0 && (
             <section>
@@ -59,24 +68,6 @@ export function DocumentaryModal({ documentary, context, onClose }: { documentar
                   </li>
                 ))}
               </ul>
-            </section>
-          )}
-          <section>
-            <h3>Contexte historique</h3>
-            <p>{enrichedDocumentary.body}</p>
-          </section>
-          <section className="gameplay-note">
-            <h3>Lecture gameplay</h3>
-            <p>{enrichedDocumentary.gameplay}</p>
-          </section>
-          {enrichedDocumentary.sourceUrl && (
-            <section>
-              <h3>Source</h3>
-              <p>
-                <a className="source-link" href={enrichedDocumentary.sourceUrl} target="_blank" rel="noreferrer">
-                  {enrichedDocumentary.sourceLabel ?? enrichedDocumentary.sourceUrl}
-                </a>
-              </p>
             </section>
           )}
         </div>

@@ -10,8 +10,8 @@
   </defs>
 
 
-<circle cx='64' cy='64' r='52' fill='#EFE0CC'/>
-<path class='stroke' fill='#C7A17A' d='M39 60c9-20 24-37 25-38 1 1 16 18 25 38 9 22 0 47-25 47S30 82 39 60z'/>
-<path class='thin' fill='#F6D7A8' d='M52 69c4-10 11-19 12-20 0 1 8 10 12 20 4 11-1 23-12 23s-16-12-12-23z'/>
+<circle cx='64' cy='64' r='52' fill='#E8DFF2'/>
+<path class='stroke' fill='#3A185F' d='M39 60c9-20 24-37 25-38 1 1 16 18 25 38 9 22 0 47-25 47S30 82 39 60z'/>
+<path class='thin' fill='#8D6CC2' d='M52 69c4-10 11-19 12-20 0 1 8 10 12 20 4 11-1 23-12 23s-16-12-12-23z'/>
 
 </svg>

@@ -23,7 +23,6 @@ export function ClickerButton({ era, clickYield, onClick }: { era: Era; clickYie
         </div>
       </div>
       <h2>{era.clickAction.label}</h2>
-      <p className="muted">Le clic reste utile, mais la production automatique doit vite prendre le relais.</p>
     </section>
   );
 }

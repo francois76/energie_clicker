@@ -212,6 +212,8 @@ function getDefaultLifetimeSeconds(tech: Technology) {
   return tech.lifetimeSeconds ?? byEra[tech.era];
 }
 
+const HIDDEN_POLLUTION_CAP = 70;
+
 function computeLifetimeForTech(tech: Technology, upgradeIds: readonly string[]) {
   return upgradeIds.reduce((lifetime, upgradeId) => {
     const upgrade = upgradeById.get(upgradeId);
@@ -289,12 +291,26 @@ function makeGenerationLabel(upgradeIds: string[]) {
   return upgradeIds.map((upgradeId) => upgradeById.get(upgradeId)?.name ?? upgradeId).join(' + ');
 }
 
+function makeGenerationId(techId: string, generationKey: string) {
+  return `${techId}-${generationKey}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function splitGenerationQuantity(generation: OwnedGeneration): OwnedGeneration[] {
+  if (generation.quantity <= 1) return [generation];
+  return Array.from({ length: generation.quantity }, (_, index) => ({
+    ...generation,
+    id: `${generation.id}-${index}`,
+    quantity: 1
+  }));
+}
+
 function ageOwnedGenerations(state: GameState, dt: number): GameState {
   const ownedGenerations: Record<string, OwnedGeneration[]> = {};
   const owned: Record<string, number> = {};
 
   for (const [techId, generations] of Object.entries(state.ownedGenerations)) {
     const alive = generations
+      .flatMap(splitGenerationQuantity)
       .map((generation) => ({
         ...generation,
         remainingLifetimeSeconds: generation.remainingLifetimeSeconds - dt
@@ -357,7 +373,9 @@ function applyMilestone(state: GameState): GameState {
     baseConsumption,
     baseProduction,
     baseStorage,
-    pollution: clamp(state.pollution + (milestone.hiddenPollutionDebtDelta ?? 0) * impact, 0, 140),
+    pollution: state.pollutionVisible
+      ? clamp(state.pollution + (milestone.hiddenPollutionDebtDelta ?? 0) * impact, 0, 140)
+      : Math.min(HIDDEN_POLLUTION_CAP, clamp(state.pollution + (milestone.hiddenPollutionDebtDelta ?? 0) * impact, 0, 140)),
     pollutionRate: state.pollutionRate + (milestone.pollutionDeltaPerSecond ?? 0) * impact
   }, milestone.documentaryId);
 
@@ -415,7 +433,7 @@ function applyEraTransition(state: GameState): GameState {
     energies,
     baseConsumption,
     pollutionVisible,
-    pollution: pollutionVisible && !state.pollutionVisible ? Math.min(state.pollution, 65) : state.pollution,
+    pollution: pollutionVisible && !state.pollutionVisible ? Math.min(state.pollution, HIDDEN_POLLUTION_CAP) : state.pollution,
     modalDocumentaryId: nextEra.documentaryId
   });
 }
@@ -449,19 +467,12 @@ function completeConstruction(state: GameState, construction: Construction): Gam
     const upgradeIds = getActiveUpgradeIdsForTechnology(item, state);
     const generationKey = upgradeIds.join('|') || 'base';
     const generations = [...(ownedGenerations[item.id] ?? [])];
-    const existingIndex = generations.findIndex((generation) => generation.upgradeIds.join('|') === generationKey);
-    if (existingIndex >= 0) {
-      generations[existingIndex] = {
-        ...generations[existingIndex],
-        quantity: generations[existingIndex].quantity + construction.quantity,
-        remainingLifetimeSeconds: Math.max(generations[existingIndex].remainingLifetimeSeconds, computeLifetimeForTech(item, upgradeIds))
-      };
-    } else {
-      const lifetime = computeLifetimeForTech(item, upgradeIds);
+    const lifetime = computeLifetimeForTech(item, upgradeIds);
+    for (let index = 0; index < construction.quantity; index += 1) {
       generations.push({
-        id: `${item.id}-${generationKey}`,
+        id: makeGenerationId(item.id, generationKey),
         label: makeGenerationLabel(upgradeIds),
-        quantity: construction.quantity,
+        quantity: 1,
         upgradeIds,
         remainingLifetimeSeconds: lifetime,
         totalLifetimeSeconds: lifetime
@@ -513,7 +524,9 @@ function tickState(state: GameState, dt: number, constructionDt = dt): GameState
     if (energy === 'fuel') totalFuelConsumed += Math.max(0, current.consumptionPerSecond) * dt;
   }
 
-  const pollution = clamp(next.pollution + next.pollutionRate * dt, 0, 140);
+  const pollution = next.pollutionVisible
+    ? clamp(next.pollution + next.pollutionRate * dt, 0, 140)
+    : Math.min(HIDDEN_POLLUTION_CAP, clamp(next.pollution + next.pollutionRate * dt, 0, 140));
   let pollutionCountdown = next.pollutionCountdown;
   if (next.pollutionVisible && pollution >= 100) {
     pollutionCountdown = pollutionCountdown == null ? MODE_CONFIG[next.mode].crisisSeconds : pollutionCountdown - dt;

@@ -3,6 +3,7 @@ import { ALL_ITEMS, ENERGY_META } from '../data/gameData';
 import { formatCountdown, formatPower } from '../utils/format';
 
 const itemById = new Map(ALL_ITEMS.map((item) => [item.id, item]));
+const eraLevels = ['prehistoire', 'agriculture', 'industrie', 'electricite_petrole', 'trente_glorieuses', 'moderne_futur'];
 
 type Props = {
   era: Era;
@@ -30,6 +31,22 @@ export function TimelinePanel({ era, nextEra, milestone, isMilestoneVisible, pha
           <h3>Prochaine époque : {nextEra.name}</h3>
           <p className="countdown">Dans {formatCountdown(remainingSeconds)}</p>
           <div className="impact-grid">
+            {nextEra.entryConsumptionDelta && Object.keys(nextEra.entryConsumptionDelta).length > 0 && (
+              <div>
+                <strong>Consommations</strong>
+                <div className="impact-pills">
+                  {Object.entries(nextEra.entryConsumptionDelta).map(([energy, delta]) => {
+                    const e = energy as Energy;
+                    return (
+                      <span className={`impact-pill ${(delta ?? 0) > 0 ? 'danger-pill' : 'benefit-pill'}`} key={energy} style={{ ['--accent' as string]: `var(${ENERGY_META[e].cssVar})` }}>
+                        <img src={ENERGY_META[e].icon} alt="" />
+                        {delta! >= 0 ? '+' : ''}{formatPower(delta ?? 0)}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div>
               <strong>Déblocages</strong>
               <div className="unlock-icons">
@@ -80,11 +97,12 @@ export function TimelinePanel({ era, nextEra, milestone, isMilestoneVisible, pha
 }
 
 export function EraPanel({ era }: { era: Era }) {
+  const level = eraLevels.indexOf(era.id) + 1;
   return (
     <section className="panel era-panel">
       <img src={era.asset} alt="" />
       <div>
-        <p className="eyebrow">Phase courante</p>
+        <p className="eyebrow">Niveau {level}</p>
         <h2>{era.name}</h2>
       </div>
     </section>

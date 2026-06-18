@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Construction, Energy, EnergyState, PurchaseOption, Technology, Upgrade } from '../types';
 import { ENERGIES, ENERGY_META, MODE_CONFIG, UPGRADES } from '../data/gameData';
 import { formatEnergyAmount, formatNumber, formatPower } from '../utils/format';
@@ -102,10 +102,57 @@ function getActiveMultiplier(item: Technology, purchasedUpgrades: Record<string,
   }, 1);
 }
 
+function formatPercentDelta(value: number) {
+  const delta = (value - 1) * 100;
+  return `${delta > 0 ? '+' : ''}${formatNumber(delta, 0)} %`;
+}
+
+function UpgradeMetrics({ upgrade }: { upgrade: Upgrade }) {
+  return (
+    <>
+      {upgrade.effect.productionMultiplier && (
+        <div className="tech-metric" title="Production"><span>Production</span><span className="cost-pill benefit-pill">{formatPercentDelta(upgrade.effect.productionMultiplier)}</span></div>
+      )}
+      {upgrade.effect.storageMultiplier && (
+        <div className="tech-metric" title="Stockage"><span>Stockage</span><span className="cost-pill benefit-pill">{formatPercentDelta(upgrade.effect.storageMultiplier)}</span></div>
+      )}
+      {upgrade.effect.lifetimeMultiplier && (
+        <div className="tech-metric" title="Durée de vie"><span>Durée</span><span className="cost-pill benefit-pill">{formatPercentDelta(upgrade.effect.lifetimeMultiplier)}</span></div>
+      )}
+      {upgrade.effect.pollutionMultiplier && (
+        <div className="tech-metric" title="Pollution"><span>Pollution</span><span className={`cost-pill ${upgrade.effect.pollutionMultiplier < 1 ? 'benefit-pill' : 'danger-pill'}`}>{formatPercentDelta(upgrade.effect.pollutionMultiplier)}</span></div>
+      )}
+      {upgrade.effect.clickMultiplier && (
+        <div className="tech-metric" title="Clic"><span>Clic</span><span className="cost-pill benefit-pill">{formatPercentDelta(upgrade.effect.clickMultiplier)}</span></div>
+      )}
+    </>
+  );
+}
+
+function DismantleMetrics({ item, mode }: { item: Technology; mode: keyof typeof MODE_CONFIG }) {
+  const productionValues = getNetProductionValues(item, mode, {});
+  const pollutionReduction = item.pollutionPerSecond ?? item.hiddenPollutionDebtPerSecond ?? 0;
+  return (
+    <>
+      {Object.keys(productionValues).length > 0 && (
+        <div className="tech-metric" title="Production perdue"><span>Production</span><EnergyPills values={multiplyValues(productionValues, -1)} mode="power" signed /></div>
+      )}
+      {pollutionReduction > 0 && (
+        <div className="tech-metric" title="Pollution réduite"><span>Pollution</span><span className="cost-pill benefit-pill">-{formatNumber(pollutionReduction, 3)} %/s</span></div>
+      )}
+    </>
+  );
+}
+
 export function Shop({ items, owned, purchasedUpgrades, constructions, energies, mode, pollutionVisible, slotsAvailable, slotCooldownRatio, onPurchase, onDismantle, getOptionCost, canAfford }: Props) {
   const [tab, setTab] = useState<Tab>('producer');
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const slotsFull = constructions.length >= slotsAvailable;
+  const tabs = (Object.keys(tabLabels) as Tab[]).filter((candidate) => candidate !== 'dismantle' || pollutionVisible);
+
+  useEffect(() => {
+    if (tab === 'dismantle' && !pollutionVisible) setTab('producer');
+  }, [pollutionVisible, tab]);
 
   const visibleItems = useMemo(() => {
     if (tab === 'dismantle') return items.filter((item) => !isUpgrade(item) && item.removable && (owned[item.id] ?? 0) > 0);
@@ -117,13 +164,11 @@ export function Shop({ items, owned, purchasedUpgrades, constructions, energies,
       <div className="panel-title-row">
         <div>
           <p className="eyebrow">Boutique</p>
-          <h2>Technologies</h2>
         </div>
-        <p className="small muted">{constructions.length}/{slotsAvailable} slots occupés</p>
       </div>
 
       <div className="tabs" role="tablist">
-        {(Object.keys(tabLabels) as Tab[]).map((candidate) => (
+        {tabs.map((candidate) => (
           <button key={candidate} className={tab === candidate ? 'active' : ''} onClick={() => setTab(candidate)}>
             {tabLabels[candidate]}
           </button>
@@ -146,6 +191,7 @@ export function Shop({ items, owned, purchasedUpgrades, constructions, energies,
             ? multiplyValues(item.storageBonus, !isUpgrade(item) ? getActiveMultiplier(item, purchasedUpgrades, 'storageMultiplier') : 1)
             : {};
           const selected = selectedItemId === item.id;
+          const isDismantle = tab === 'dismantle' && !isUpgrade(item);
           return (
             <article className={`shop-card ${isDone ? 'owned-upgrade' : ''} ${selected ? 'selected-shop-card' : 'compact-shop-card'}`} key={item.id} onClick={() => setSelectedItemId(selected ? null : item.id)}>
               <img src={item.asset} alt="" />
@@ -156,26 +202,39 @@ export function Shop({ items, owned, purchasedUpgrades, constructions, energies,
                     <span className="pill">×{count}</span>
                   </div>
                 )}
-                {Object.keys(productionValues).length > 0 && (
+                {isUpgrade(item) ? (
+                  <UpgradeMetrics upgrade={item} />
+                ) : isDismantle ? (
+                  <DismantleMetrics item={item} mode={mode} />
+                ) : Object.keys(productionValues).length > 0 && (
                   <div className="tech-metric" title="Production nette"><span>Production</span><EnergyPills values={productionValues} mode="power" signed dangerPositive={negativeProductionIsBenefit} negativeIsBenefit={negativeProductionIsBenefit} /></div>
                 )}
-                {Object.keys(storageValues).length > 0 && (
+                {!isUpgrade(item) && !isDismantle && Object.keys(storageValues).length > 0 && (
                   <div className="tech-metric" title="Stockage"><span>Stockage</span><EnergyPills values={storageValues} mode="energy" signed /></div>
                 )}
-                {pollutionVisible && 'pollutionPerSecond' in item && item.pollutionPerSecond ? (
+                {!isDismantle && pollutionVisible && 'pollutionPerSecond' in item && item.pollutionPerSecond ? (
                   <div className="tech-metric negative" title="Pollution"><span aria-hidden="true">☁</span><span className="cost-pill danger-pill">+{formatNumber(item.pollutionPerSecond, 3)} %/s</span></div>
                 ) : null}
-                {pollutionVisible && 'pollutionDeltaPerSecond' in item && item.pollutionDeltaPerSecond && item.pollutionDeltaPerSecond < 0 ? (
+                {!isDismantle && pollutionVisible && 'pollutionDeltaPerSecond' in item && item.pollutionDeltaPerSecond && item.pollutionDeltaPerSecond < 0 ? (
                   <div className="tech-metric" title="Pollution"><span>Pollution</span><span className="cost-pill benefit-pill">{formatNumber(item.pollutionDeltaPerSecond, 3)} %/s</span></div>
                 ) : null}
               </div>
-              {tab === 'dismantle' && !isUpgrade(item) ? (
-                <>
-                  {selected && pollutionVisible && (item.pollutionPerSecond || item.hiddenPollutionDebtPerSecond) ? (
-                    <div className="tech-metric dismantle-benefit" title="Réduction de pollution"><span>Pollution</span><span className="cost-pill benefit-pill">-{formatNumber(item.pollutionPerSecond ?? item.hiddenPollutionDebtPerSecond ?? 0, 3)} %/s</span></div>
-                  ) : null}
-                  {selected && <button className="secondary danger-button" disabled={slotsFull} onClick={(event) => { event.stopPropagation(); onDismantle(item.id); }}>Démanteler</button>}
-                </>
+              {isDismantle ? (
+                selected && <div className="inline-options">
+                  <div className="option-choice">
+                    <button
+                      className={`option-button ${slotsFull ? 'has-slot-cooldown' : 'purchasable-now'}`}
+                      disabled={slotsFull}
+                      onClick={(event) => { event.stopPropagation(); onDismantle(item.id); }}
+                    >
+                      {slotsFull && <span className="slot-cooldown" style={{ transform: `translateX(${-100 + Math.max(0, Math.min(1, slotCooldownRatio)) * 100}%)` }} />}
+                      <span className="option-price-row">
+                        <span className="cost-pill">temps seul</span>
+                        <span className="option-time">démanteler</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
               ) : (
                 selected && <div className={`inline-options ${item.purchaseOptions.length === 2 ? 'two-options' : ''}`}>
                   {[...item.purchaseOptions].sort((a, b) => {
@@ -188,11 +247,13 @@ export function Shop({ items, owned, purchasedUpgrades, constructions, energies,
                     const requirementsOk = option.requirements?.every((required) => purchasedUpgrades[required] || (owned[required] ?? 0) > 0) ?? true;
                     const disabled = isDone || quantityLimitReached || slotsFull || !affordable || !requirementsOk;
                     const showSlotCooldown = slotsFull && affordable && requirementsOk && !isDone && !quantityLimitReached;
+                    const blockedByResources = !affordable && requirementsOk && !isDone && !quantityLimitReached;
+                    const purchasableNow = !disabled;
                     return (
                       <div className="option-choice" key={option.id}>
                         {optionIndex > 0 && item.purchaseOptions.length === 2 && <span className="option-separator">/</span>}
                         <button
-                          className={`option-button ${showSlotCooldown ? 'has-slot-cooldown' : ''}`}
+                          className={`option-button ${showSlotCooldown ? 'has-slot-cooldown' : ''} ${blockedByResources ? 'blocked-by-resources' : ''} ${purchasableNow ? 'purchasable-now' : ''}`}
                           disabled={disabled}
                           onClick={(event) => { event.stopPropagation(); onPurchase(item.id, option.id, 1); }}
                         >
