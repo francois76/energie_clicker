@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Construction, Energy, EnergyState, PurchaseOption, Technology, Upgrade } from '../types';
 import { ENERGIES, ENERGY_META, MODE_CONFIG, UPGRADES } from '../data/gameData';
-import { formatEnergyAmount, formatNumber, formatRate } from '../utils/format';
+import { formatEnergy, formatNumber, formatRate } from '../utils/format';
 
 type Item = Technology | Upgrade;
 
@@ -51,7 +51,7 @@ function EnergyPills({ values, mode, signed = false, dangerPositive = false, neg
         const meta = ENERGY_META[energy];
         const value = values[energy] ?? 0;
         const sign = signed && value > 0 ? '+' : '';
-        const formatted = mode === 'power' ? formatRate(value, energy) : formatEnergyAmount(value);
+        const formatted = mode === 'power' ? formatRate(value, energy) : formatEnergy(value, energy);
         const isBenefit = negativeIsBenefit && value < 0;
         const isDanger = dangerPositive ? value > 0 : value < 0 && !isBenefit;
         return (
@@ -212,8 +212,8 @@ export function Shop({ items, owned, purchasedUpgrades, constructions, energies,
                 {!isUpgrade(item) && !isDismantle && Object.keys(storageValues).length > 0 && (
                   <div className="tech-metric" title="Stockage"><span>Stockage</span><EnergyPills values={storageValues} mode="energy" signed /></div>
                 )}
-                {!isDismantle && pollutionVisible && 'pollutionPerSecond' in item && item.pollutionPerSecond ? (
-                  <div className="tech-metric negative" title="Pollution"><span aria-hidden="true">☁</span><span className="cost-pill danger-pill">polluant</span></div>
+                {!isDismantle && pollutionVisible && item.purchaseOptions.some((option) => option.pollutionDebt || option.pollutionInstant) ? (
+                  <div className="tech-metric negative" title="Pollution"><span>Pollution</span><span className="cost-pill danger-pill">+{formatNumber(Math.min(...item.purchaseOptions.map((option) => option.pollutionDebt ?? option.pollutionInstant ?? Number.POSITIVE_INFINITY)), 1)} % min</span></div>
                 ) : null}
                 {!isDismantle && pollutionVisible && 'pollutionDeltaPerSecond' in item && item.pollutionDeltaPerSecond && item.pollutionDeltaPerSecond < 0 ? (
                   <div className="tech-metric" title="Pollution"><span>Pollution</span><span className="cost-pill benefit-pill">réduit</span></div>
@@ -260,6 +260,9 @@ export function Shop({ items, owned, purchasedUpgrades, constructions, energies,
                           {showSlotCooldown && <span className="slot-cooldown" style={{ transform: `translateX(${-100 + Math.max(0, Math.min(1, slotCooldownRatio)) * 100}%)` }} />}
                           <span className="option-price-row">
                             <EnergyPills values={cost} mode="energy" />
+                            {pollutionVisible && (option.pollutionDebt || option.pollutionInstant) ? (
+                              <span className="cost-pill danger-pill">+{formatNumber(option.pollutionDebt ?? option.pollutionInstant ?? 0, 1)} % pollution</span>
+                            ) : null}
                             <span className="option-time">{formatNumber(option.buildTimeSeconds, 1)} s</span>
                           </span>
                         </button>

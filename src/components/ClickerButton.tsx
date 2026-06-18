@@ -1,6 +1,6 @@
 import type { Energy, Era } from '../types';
 import { ENERGIES, ENERGY_META } from '../data/gameData';
-import { formatEnergyAmount } from '../utils/format';
+import { formatEnergy } from '../utils/format';
 
 export function ClickerButton({ era, clickYield, onClick }: { era: Era; clickYield: Partial<Record<Energy, number>>; onClick: () => void }) {
   return (
@@ -16,7 +16,7 @@ export function ClickerButton({ era, clickYield, onClick }: { era: Era; clickYie
             return (
               <span key={energy} style={{ ['--accent' as string]: `var(${meta.cssVar})` }}>
                 <img src={meta.icon} alt="" />
-                +{formatEnergyAmount(clickYield[energy] ?? 0)}
+                +{formatEnergy(clickYield[energy] ?? 0, energy)}
               </span>
             );
           })}

@@ -439,8 +439,19 @@ function completeConstruction(state: GameState, construction: Construction): Gam
 
   if (!isUpgrade(item) && construction.optionId === 'dismantle') {
     const pollutionReduction = item.pollutionPerSecond ?? item.hiddenPollutionDebtPerSecond ?? 0;
+    const generations = [...(ownedGenerations[item.id] ?? [])].sort((a, b) => a.remainingLifetimeSeconds - b.remainingLifetimeSeconds);
+    const removed = generations.shift();
+    const remainingGenerations = generations.filter((generation) => generation.quantity > 0);
+    if (removed) {
+      if (remainingGenerations.length > 0) ownedGenerations[item.id] = remainingGenerations;
+      else delete ownedGenerations[item.id];
+      owned[item.id] = Math.max(0, (owned[item.id] ?? 0) - 1);
+      if (owned[item.id] <= 0) delete owned[item.id];
+    }
     nextState = {
       ...state,
+      owned,
+      ownedGenerations,
       producersDismantled: state.producersDismantled + 1,
       pollutionDismantled: { ...state.pollutionDismantled, [item.id]: (state.pollutionDismantled?.[item.id] ?? 0) + 1 },
       pollution: Math.max(0, state.pollution - pollutionReduction * 25)
@@ -658,7 +669,10 @@ export function useGame(initialMode: GameMode) {
       for (const energy of ENERGIES) {
         energies[energy] = { ...energies[energy], stock: clamp(energies[energy].stock - (cost[energy] ?? 0), 0, energies[energy].capacity) };
       }
-      const pollution = clamp(current.pollution + (option.pollutionDebt ?? option.pollutionInstant ?? 0) * MODE_CONFIG[current.mode].milestoneImpactMultiplier, 0, 140);
+      const pollutionDebt = (option.pollutionDebt ?? option.pollutionInstant ?? 0) * MODE_CONFIG[current.mode].milestoneImpactMultiplier;
+      const pollution = current.pollutionVisible
+        ? clamp(current.pollution + pollutionDebt, 0, 140)
+        : Math.min(HIDDEN_POLLUTION_CAP, clamp(current.pollution + pollutionDebt, 0, 140));
       const construction: Construction = {
         id: `${itemId}-${optionId}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
         technologyId: itemId,
@@ -679,8 +693,7 @@ export function useGame(initialMode: GameMode) {
       const pending = current.constructions
         .filter((construction) => construction.technologyId === technologyId && construction.optionId === 'dismantle')
         .reduce((total, construction) => total + construction.quantity, 0);
-      const alreadyDismantled = current.pollutionDismantled?.[technologyId] ?? 0;
-      if ((current.owned[technologyId] ?? 0) - alreadyDismantled - pending <= 0) return current;
+      if ((current.owned[technologyId] ?? 0) - pending <= 0) return current;
       if (current.constructions.length >= getAvailableSlots(current)) return current;
       const totalSeconds = Math.max(1, DISMANTLE_BUILD_TIME_SECONDS * MODE_CONFIG[current.mode].buildTimeMultiplier);
       const construction: Construction = {
