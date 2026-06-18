@@ -226,7 +226,6 @@ function deriveState(raw: GameState): GameState {
   const production: Record<Energy, number> = { ...raw.baseProduction };
   const consumption: Record<Energy, number> = { ...raw.baseConsumption };
   const storage: Record<Energy, number> = { ...raw.baseStorage };
-  let pollutionRate = 0;
 
   const generationEntries = Object.keys(raw.ownedGenerations).length > 0
     ? Object.entries(raw.ownedGenerations)
@@ -244,12 +243,9 @@ function deriveState(raw: GameState): GameState {
       if (generation.quantity <= 0) continue;
       const productionMultiplier = computeMultiplierForTech(tech, generation.upgradeIds, 'productionMultiplier');
       const storageMultiplier = computeMultiplierForTech(tech, generation.upgradeIds, 'storageMultiplier');
-      const pollutionMultiplier = computeMultiplierForTech(tech, generation.upgradeIds, 'pollutionMultiplier');
       addRecord(production, tech.productionPerSecond, generation.quantity * productionMultiplier * MODE_CONFIG[raw.mode].passiveGainMultiplier);
       addRecord(consumption, tech.consumptionPerSecond, generation.quantity);
       addRecord(storage, tech.storageBonus, generation.quantity * storageMultiplier);
-      pollutionRate += (tech.pollutionPerSecond ?? tech.hiddenPollutionDebtPerSecond ?? 0) * generation.quantity * pollutionMultiplier;
-      pollutionRate += (tech.pollutionDeltaPerSecond ?? 0) * generation.quantity;
     }
   }
 
@@ -257,11 +253,7 @@ function deriveState(raw: GameState): GameState {
     const tech = techById.get(techId);
     if (!tech || tech.kind !== 'conversion' || quantity <= 0) continue;
     addRecord(consumption, tech.consumptionPerSecond, quantity);
-    pollutionRate += (tech.pollutionDeltaPerSecond ?? 0) * quantity;
   }
-
-  pollutionRate += raw.pollutionRate + (raw.pollutionRateOffset ?? 0);
-  pollutionRate = Math.max(-0.25, pollutionRate);
 
   const energies = { ...raw.energies };
   for (const energy of ENERGIES) {
@@ -277,7 +269,7 @@ function deriveState(raw: GameState): GameState {
     };
   }
 
-  return { ...raw, energies, pollutionRate };
+  return { ...raw, energies, pollutionRate: 0 };
 }
 
 function getActiveUpgradeIdsForTechnology(tech: Technology, state: GameState) {
@@ -375,8 +367,7 @@ function applyMilestone(state: GameState): GameState {
     baseStorage,
     pollution: state.pollutionVisible
       ? clamp(state.pollution + (milestone.hiddenPollutionDebtDelta ?? 0) * impact, 0, 140)
-      : Math.min(HIDDEN_POLLUTION_CAP, clamp(state.pollution + (milestone.hiddenPollutionDebtDelta ?? 0) * impact, 0, 140)),
-    pollutionRate: state.pollutionRate + (milestone.pollutionDeltaPerSecond ?? 0) * impact
+      : Math.min(HIDDEN_POLLUTION_CAP, clamp(state.pollution + (milestone.hiddenPollutionDebtDelta ?? 0) * impact, 0, 140))
   }, milestone.documentaryId);
 
   if (state.milestoneIndex < era.milestones.length - 1) {
@@ -452,7 +443,6 @@ function completeConstruction(state: GameState, construction: Construction): Gam
       ...state,
       producersDismantled: state.producersDismantled + 1,
       pollutionDismantled: { ...state.pollutionDismantled, [item.id]: (state.pollutionDismantled?.[item.id] ?? 0) + 1 },
-      pollutionRateOffset: (state.pollutionRateOffset ?? 0) - pollutionReduction,
       pollution: Math.max(0, state.pollution - pollutionReduction * 25)
     };
     return deriveState(nextState);
@@ -524,9 +514,7 @@ function tickState(state: GameState, dt: number, constructionDt = dt): GameState
     if (energy === 'fuel') totalFuelConsumed += Math.max(0, current.consumptionPerSecond) * dt;
   }
 
-  const pollution = next.pollutionVisible
-    ? clamp(next.pollution + next.pollutionRate * dt, 0, 140)
-    : Math.min(HIDDEN_POLLUTION_CAP, clamp(next.pollution + next.pollutionRate * dt, 0, 140));
+  const pollution = next.pollutionVisible ? clamp(next.pollution, 0, 140) : Math.min(HIDDEN_POLLUTION_CAP, clamp(next.pollution, 0, 140));
   let pollutionCountdown = next.pollutionCountdown;
   if (next.pollutionVisible && pollution >= 100) {
     pollutionCountdown = pollutionCountdown == null ? MODE_CONFIG[next.mode].crisisSeconds : pollutionCountdown - dt;

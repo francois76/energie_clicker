@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Construction, Energy, EnergyState, PurchaseOption, Technology, Upgrade } from '../types';
 import { ENERGIES, ENERGY_META, MODE_CONFIG, UPGRADES } from '../data/gameData';
-import { formatEnergyAmount, formatNumber, formatPower } from '../utils/format';
+import { formatEnergyAmount, formatNumber, formatRate } from '../utils/format';
 
 type Item = Technology | Upgrade;
 
@@ -51,7 +51,7 @@ function EnergyPills({ values, mode, signed = false, dangerPositive = false, neg
         const meta = ENERGY_META[energy];
         const value = values[energy] ?? 0;
         const sign = signed && value > 0 ? '+' : '';
-        const formatted = mode === 'power' ? formatPower(value) : formatEnergyAmount(value);
+        const formatted = mode === 'power' ? formatRate(value, energy) : formatEnergyAmount(value);
         const isBenefit = negativeIsBenefit && value < 0;
         const isDanger = dangerPositive ? value > 0 : value < 0 && !isBenefit;
         return (
@@ -138,7 +138,7 @@ function DismantleMetrics({ item, mode }: { item: Technology; mode: keyof typeof
         <div className="tech-metric" title="Production perdue"><span>Production</span><EnergyPills values={multiplyValues(productionValues, -1)} mode="power" signed /></div>
       )}
       {pollutionReduction > 0 && (
-        <div className="tech-metric" title="Pollution réduite"><span>Pollution</span><span className="cost-pill benefit-pill">-{formatNumber(pollutionReduction, 3)} %/s</span></div>
+        <div className="tech-metric" title="Pollution réduite"><span>Pollution</span><span className="cost-pill benefit-pill">-{formatNumber(pollutionReduction * 25, 1)} %</span></div>
       )}
     </>
   );
@@ -213,10 +213,10 @@ export function Shop({ items, owned, purchasedUpgrades, constructions, energies,
                   <div className="tech-metric" title="Stockage"><span>Stockage</span><EnergyPills values={storageValues} mode="energy" signed /></div>
                 )}
                 {!isDismantle && pollutionVisible && 'pollutionPerSecond' in item && item.pollutionPerSecond ? (
-                  <div className="tech-metric negative" title="Pollution"><span aria-hidden="true">☁</span><span className="cost-pill danger-pill">+{formatNumber(item.pollutionPerSecond, 3)} %/s</span></div>
+                  <div className="tech-metric negative" title="Pollution"><span aria-hidden="true">☁</span><span className="cost-pill danger-pill">polluant</span></div>
                 ) : null}
                 {!isDismantle && pollutionVisible && 'pollutionDeltaPerSecond' in item && item.pollutionDeltaPerSecond && item.pollutionDeltaPerSecond < 0 ? (
-                  <div className="tech-metric" title="Pollution"><span>Pollution</span><span className="cost-pill benefit-pill">{formatNumber(item.pollutionDeltaPerSecond, 3)} %/s</span></div>
+                  <div className="tech-metric" title="Pollution"><span>Pollution</span><span className="cost-pill benefit-pill">réduit</span></div>
                 ) : null}
               </div>
               {isDismantle ? (

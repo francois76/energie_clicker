@@ -5,7 +5,7 @@ export const ENERGIES: Energy[] = ['heat', 'mechanical', 'fuel', 'electricity'];
 export const ENERGY_META: Record<Energy, { label: string; short: string; unit: string; rateUnit: string; icon: string; cssVar: string }> = {
   heat: { label: 'Chaleur', short: 'Chaleur', unit: 'kW', rateUnit: 'kW/h', icon: 'assets/icons/energy-heat.svg', cssVar: '--energy-heat' },
   mechanical: { label: 'Force mécanique', short: 'Force', unit: 'kW', rateUnit: 'kW/h', icon: 'assets/icons/energy-mechanical.svg', cssVar: '--energy-mechanical' },
-  fuel: { label: 'Carburants', short: 'Carburants', unit: 'kW', rateUnit: 'kW/h', icon: 'assets/icons/energy-fuel.svg', cssVar: '--energy-fuel' },
+  fuel: { label: 'Carburants', short: 'Carburants', unit: 'L', rateUnit: 'L/s', icon: 'assets/icons/energy-fuel.svg', cssVar: '--energy-fuel' },
   electricity: { label: 'Électricité', short: 'Élec.', unit: 'kW', rateUnit: 'kW/h', icon: 'assets/icons/energy-electricity.svg', cssVar: '--energy-electricity' }
 };
 

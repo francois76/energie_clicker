@@ -94,7 +94,6 @@ export default function App() {
         <ResourcePanel
           energies={game.state.energies}
           pollution={game.state.pollution}
-          pollutionRate={game.state.pollutionRate}
           pollutionVisible={game.state.pollutionVisible}
           pollutionCountdown={game.state.pollutionCountdown}
         />

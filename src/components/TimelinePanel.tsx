@@ -1,6 +1,6 @@
 import type { Energy, EnergyState, Era, GamePhase, Milestone } from '../types';
 import { ALL_ITEMS, ENERGY_META } from '../data/gameData';
-import { formatCountdown, formatPower } from '../utils/format';
+import { formatCountdown, formatRate } from '../utils/format';
 
 const itemById = new Map(ALL_ITEMS.map((item) => [item.id, item]));
 const eraLevels = ['prehistoire', 'agriculture', 'industrie', 'electricite_petrole', 'trente_glorieuses', 'moderne_futur'];
@@ -40,7 +40,7 @@ export function TimelinePanel({ era, nextEra, milestone, isMilestoneVisible, pha
                     return (
                       <span className={`impact-pill ${(delta ?? 0) > 0 ? 'danger-pill' : 'benefit-pill'}`} key={energy} style={{ ['--accent' as string]: `var(${ENERGY_META[e].cssVar})` }}>
                         <img src={ENERGY_META[e].icon} alt="" />
-                        {delta! >= 0 ? '+' : ''}{formatPower(delta ?? 0)}
+                        {delta! >= 0 ? '+' : ''}{formatRate(delta ?? 0, e)}
                       </span>
                     );
                   })}
@@ -77,7 +77,7 @@ export function TimelinePanel({ era, nextEra, milestone, isMilestoneVisible, pha
               return (
                 <span className={`impact-pill ${(delta ?? 0) > 0 ? 'danger-pill' : 'benefit-pill'}`} key={energy} style={{ ['--accent' as string]: `var(${ENERGY_META[e].cssVar})` }}>
                   <img src={ENERGY_META[e].icon} alt="" />
-                  {delta! >= 0 ? '+' : ''}{formatPower(delta ?? 0)}
+                  {delta! >= 0 ? '+' : ''}{formatRate(delta ?? 0, e)}
                 </span>
               );
             })}

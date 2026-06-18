@@ -16,8 +16,7 @@ export function formatEnergy(value: number, energy: Energy): string {
 }
 
 export function formatRate(value: number, energy: Energy): string {
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${formatNumber(value)} ${ENERGY_META[energy].rateUnit}`;
+  return `${formatNumber(value)} ${ENERGY_META[energy].rateUnit}`;
 }
 
 export function formatEnergyAmount(value: number): string {

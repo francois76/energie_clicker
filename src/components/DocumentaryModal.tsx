@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react';
 import type { Documentary, Energy } from '../types';
 import { ENERGY_META } from '../data/gameData';
 import { DOCUMENTARY_DRAFTS } from '../data/documentaryContent';
-import { formatPower } from '../utils/format';
+import { formatRate } from '../utils/format';
 
 export type DocumentaryContext = {
   consumptionDelta?: Partial<Record<Energy, number>>;
@@ -25,11 +26,20 @@ export function RulesPanel() {
 }
 
 export function DocumentaryModal({ documentary, context, onClose }: { documentary: Documentary | null; context: DocumentaryContext | null; onClose: () => void }) {
+  const [interactionGuard, setInteractionGuard] = useState(false);
+
+  useEffect(() => {
+    if (!documentary) return;
+    setInteractionGuard(true);
+    const timeout = window.setTimeout(() => setInteractionGuard(false), 1000);
+    return () => window.clearTimeout(timeout);
+  }, [documentary]);
+
   if (!documentary) return null;
   const enrichedDocumentary = DOCUMENTARY_DRAFTS[documentary.id] ?? documentary;
   const unlockedItems = context?.unlockedItems ?? [];
   return (
-    <div className="modal-backdrop documentary-backdrop" onMouseDown={onClose}>
+    <div className={`modal-backdrop documentary-backdrop ${interactionGuard ? 'interaction-guard' : ''}`}>
       <div role="dialog" aria-modal="true" className="documentary-modal" onMouseDown={(event) => event.stopPropagation()}>
         <button className="icon-button floating-close" onClick={onClose} aria-label="Fermer">×</button>
         <p className="eyebrow">Événement historique</p>
@@ -51,7 +61,7 @@ export function DocumentaryModal({ documentary, context, onClose }: { documentar
                 {Object.entries(context.consumptionDelta).map(([energy, value]) => (
                   <span className={`impact-pill ${(value ?? 0) > 0 ? 'danger-pill' : 'benefit-pill'}`} key={energy} style={{ ['--accent' as string]: `var(${ENERGY_META[energy as Energy].cssVar})` }}>
                     <img src={ENERGY_META[energy as Energy].icon} alt="" />
-                    {value! >= 0 ? '+' : ''}{formatPower(value ?? 0)}
+                    {value! >= 0 ? '+' : ''}{formatRate(value ?? 0, energy as Energy)}
                   </span>
                 ))}
               </div>

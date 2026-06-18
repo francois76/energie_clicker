@@ -1,16 +1,15 @@
 import type { Energy, EnergyState } from '../types';
 import { ENERGIES, ENERGY_META } from '../data/gameData';
-import { formatCountdown, formatEnergyAmount, formatNumber, formatPower } from '../utils/format';
+import { formatCountdown, formatEnergy, formatNumber, formatRate } from '../utils/format';
 
 type Props = {
   energies: Record<Energy, EnergyState>;
   pollution: number;
-  pollutionRate: number;
   pollutionVisible: boolean;
   pollutionCountdown: number | null;
 };
 
-export function ResourcePanel({ energies, pollution, pollutionRate, pollutionVisible, pollutionCountdown }: Props) {
+export function ResourcePanel({ energies, pollution, pollutionVisible, pollutionCountdown }: Props) {
   return (
     <section className="panel resource-panel">
       <div className="panel-title-row">
@@ -22,10 +21,10 @@ export function ResourcePanel({ energies, pollution, pollutionRate, pollutionVis
         <table className="resource-table">
           <thead>
             <tr>
-              <th>Stockage kW</th>
-              <th>Production kW/h</th>
-              <th>Consommation kW/h</th>
-              <th>Delta kW/h</th>
+              <th>Stockage</th>
+              <th>Production</th>
+              <th>Consommation</th>
+              <th>Delta</th>
             </tr>
           </thead>
           <tbody>
@@ -44,16 +43,16 @@ export function ResourcePanel({ energies, pollution, pollutionRate, pollutionVis
                         <img src={meta.icon} alt="" />
                         <span>
                           <strong>{meta.label}</strong>
-                          <small>{formatEnergyAmount(state.stock)} / {formatEnergyAmount(state.capacity)}</small>
+                          <small>{formatEnergy(state.stock, energy)} / {formatEnergy(state.capacity, energy)}</small>
                         </span>
                       </span>
                       <span className="storage-meter"><span style={{ transform: `scaleX(${ratio})` }} /></span>
                     </span>
                     {danger && <small className="danger-line">Crise : {formatCountdown(state.crisisCountdown ?? 0)}</small>}
                   </td>
-                  <td>{formatPower(state.productionPerSecond)}</td>
-                  <td>{formatPower(state.consumptionPerSecond)}</td>
-                  <td><strong className={net >= 0 ? 'positive' : 'negative'}>{net > 0 ? '+' : ''}{formatPower(net)}</strong></td>
+                  <td>{formatRate(state.productionPerSecond, energy)}</td>
+                  <td>{formatRate(state.consumptionPerSecond, energy)}</td>
+                  <td><strong className={net >= 0 ? 'positive' : 'negative'}>{net > 0 ? '+' : ''}{formatRate(net, energy)}</strong></td>
                 </tr>
               );
             })}
@@ -72,9 +71,9 @@ export function ResourcePanel({ energies, pollution, pollutionRate, pollutionVis
                   </span>
                   {pollutionCountdown != null && <small className="danger-line">Crise pollution : {formatCountdown(pollutionCountdown)}</small>}
                 </td>
-                <td>0 %/s</td>
-                <td>{pollutionRate > 0 ? formatNumber(pollutionRate, 3) : '0'} %/s</td>
-                <td><strong className={pollutionRate <= 0 ? 'positive' : 'negative'}>{pollutionRate > 0 ? '+' : ''}{formatNumber(pollutionRate, 3)} %/s</strong></td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
               </tr>
             )}
           </tbody>
