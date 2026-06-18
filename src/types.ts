@@ -91,6 +91,7 @@ export type Era = {
   };
   constructionSlots: number;
   entryConsumptionDelta?: Partial<Record<Energy, number>>;
+  entryStockDelta?: Partial<Record<Energy, number>>;
   technologiesUnlocked: string[];
   milestones: string[];
   transitionAnnouncementSeconds: number;

@@ -4,7 +4,7 @@ import { ENERGIES, ENERGY_META } from '../data/gameData';
 
 type DebugActions = {
   addEnergy: (energy: Energy, amount?: number) => void;
-  refuel: () => void;
+  clearPollution: () => void;
   nextMilestone: () => void;
   nextEra: () => void;
   setSpeed: (speed: number) => void;
@@ -32,7 +32,7 @@ export function DebugPanel({ state, debug }: { state: DebugState; debug: DebugAc
                 + {ENERGY_META[energy].short}
               </button>
             ))}
-            <button onClick={debug.refuel}>Refuel 30 %</button>
+            {state.mode === 'demo' && <button onClick={debug.clearPollution}>Vider pollution</button>}
             <button onClick={debug.nextMilestone}>Sauter jalon</button>
             <button onClick={debug.nextEra}>Sauter époque</button>
             {[1, 3, 10].map((speed) => (
@@ -40,7 +40,9 @@ export function DebugPanel({ state, debug }: { state: DebugState; debug: DebugAc
                 Temps x{speed}
               </button>
             ))}
-            <button onClick={debug.toggleGameOver}>{state.allowGameOver ? 'Désactiver' : 'Activer'} game over</button>
+            {state.mode !== 'demo' && (
+              <button onClick={debug.toggleGameOver}>{state.allowGameOver ? 'Désactiver' : 'Activer'} game over</button>
+            )}
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Construction, Energy, EnergyState, GameMode, GamePhase, OwnedGeneration, PurchaseOption, Technology, Upgrade } from '../types';
+import type { Construction, Energy, EnergyState, Era, GameMode, GamePhase, OwnedGeneration, PurchaseOption, Technology, Upgrade } from '../types';
 import {
   ALL_ITEMS,
   DOCUMENTARIES,
@@ -34,19 +34,58 @@ type GameState = {
   ownedGenerations: Record<string, OwnedGeneration[]>;
   purchasedUpgrades: Record<string, boolean>;
   constructions: Construction[];
+  demoGeneratorPower: number;
+  pollutionRateOffset: number;
   pollutionVisible: boolean;
   pollution: number;
   pollutionRate: number;
   pollutionCountdown: number | null;
   producersDismantled: number;
+  pollutionDismantled: Record<string, number>;
   totalElectricityProduced: number;
   totalFuelConsumed: number;
   modalDocumentaryId: string | null;
   finalShownAt: number | null;
 };
 
+type TestHarness = {
+  state: GameState;
+  currentEra: Era;
+  availableItems: Item[];
+  actions: {
+    click: () => void;
+    purchase: (itemId: string, optionId: string, quantity: number) => void;
+    dismantle: (technologyId: string) => void;
+    closeDocumentary: () => void;
+    cycleSpeed: () => void;
+    togglePause: () => void;
+    reset: () => void;
+    resetMode: (mode: GameMode) => void;
+    setDemoGeneratorPower: (power: number) => void;
+    debug: {
+      addEnergy: (energy: Energy, amount?: number) => void;
+      clearPollution: () => void;
+      nextMilestone: () => void;
+      nextEra: () => void;
+      setSpeed: (speed: number) => void;
+      toggleGameOver: () => void;
+    };
+    getOptionCost: (option: PurchaseOption, quantity: number) => Partial<Record<Energy, number>>;
+    canAfford: (cost: Partial<Record<Energy, number>>) => boolean;
+    testTick: (seconds: number) => void;
+    testClickMany: (quantity: number) => void;
+  };
+};
+
+declare global {
+  interface Window {
+    __ENERGIE_CLICKER_TEST__?: TestHarness;
+  }
+}
+
 const SAVE_KEY = 'energie-clicker-save-v1';
 const SPEEDS = [1, 3, 10] as const;
+const DISMANTLE_BUILD_TIME_SECONDS = 32;
 
 const itemById = new Map<string, Item>(ALL_ITEMS.map((item) => [item.id, item]));
 const techById = new Map<string, Technology>(TECHNOLOGIES.map((item) => [item.id, item]));
@@ -78,7 +117,7 @@ function makeInitialState(mode: GameMode): GameState {
     mode,
     speed: 1,
     paused: false,
-    allowGameOver: true,
+    allowGameOver: mode !== 'demo',
     elapsedSeconds: 0,
     eraIndex: 0,
     milestoneIndex: 0,
@@ -92,11 +131,14 @@ function makeInitialState(mode: GameMode): GameState {
     ownedGenerations: {},
     purchasedUpgrades: {},
     constructions: [],
+    demoGeneratorPower: 0,
+    pollutionRateOffset: 0,
     pollutionVisible: false,
     pollution: 0,
     pollutionRate: 0,
     pollutionCountdown: null,
     producersDismantled: 0,
+    pollutionDismantled: {},
     totalElectricityProduced: 0,
     totalFuelConsumed: 0,
     modalDocumentaryId: null,
@@ -113,7 +155,7 @@ function readSavedState(mode: GameMode): GameState | null {
       || MILESTONES.some((milestone) => milestone.documentaryId === parsed.modalDocumentaryId)
       ? parsed.modalDocumentaryId
       : null;
-    return deriveState({ ...makeInitialState(mode), ...parsed, mode, modalDocumentaryId });
+    return deriveState({ ...makeInitialState(mode), ...parsed, mode, allowGameOver: mode === 'demo' ? false : parsed.allowGameOver, modalDocumentaryId });
   } catch {
     return null;
   }
@@ -161,11 +203,11 @@ function computeClickMultiplier(state: GameState) {
 function getDefaultLifetimeSeconds(tech: Technology) {
   const byEra: Record<Technology['era'], number> = {
     prehistoire: 210,
-    agriculture: 300,
-    industrie: 360,
-    electricite_petrole: 480,
-    trente_glorieuses: 600,
-    moderne_futur: 720
+    agriculture: 540,
+    industrie: 2400,
+    electricite_petrole: 3000,
+    trente_glorieuses: 3600,
+    moderne_futur: 4200
   };
   return tech.lifetimeSeconds ?? byEra[tech.era];
 }
@@ -186,15 +228,16 @@ function deriveState(raw: GameState): GameState {
 
   const generationEntries = Object.keys(raw.ownedGenerations).length > 0
     ? Object.entries(raw.ownedGenerations)
-    : Object.entries(raw.owned).map(([techId, quantity]) => {
+    : Object.entries(raw.owned).flatMap(([techId, quantity]) => {
       const tech = techById.get(techId);
+      if (!tech || tech.kind === 'conversion') return [];
       const lifetime = tech ? computeLifetimeForTech(tech, []) : 1;
-      return [techId, [{ id: `${techId}-legacy`, label: 'Génération initiale', quantity, upgradeIds: [], remainingLifetimeSeconds: lifetime, totalLifetimeSeconds: lifetime }]] as const;
+      return [[techId, [{ id: `${techId}-legacy`, label: 'Génération initiale', quantity, upgradeIds: [], remainingLifetimeSeconds: lifetime, totalLifetimeSeconds: lifetime }]] as const];
     });
 
   for (const [techId, generations] of generationEntries) {
     const tech = techById.get(techId);
-    if (!tech) continue;
+    if (!tech || tech.kind === 'conversion') continue;
     for (const generation of generations) {
       if (generation.quantity <= 0) continue;
       const productionMultiplier = computeMultiplierForTech(tech, generation.upgradeIds, 'productionMultiplier');
@@ -208,18 +251,26 @@ function deriveState(raw: GameState): GameState {
     }
   }
 
-  pollutionRate += raw.pollutionRate;
+  for (const [techId, quantity] of Object.entries(raw.owned)) {
+    const tech = techById.get(techId);
+    if (!tech || tech.kind !== 'conversion' || quantity <= 0) continue;
+    addRecord(consumption, tech.consumptionPerSecond, quantity);
+    pollutionRate += (tech.pollutionDeltaPerSecond ?? 0) * quantity;
+  }
+
+  pollutionRate += raw.pollutionRate + (raw.pollutionRateOffset ?? 0);
   pollutionRate = Math.max(-0.25, pollutionRate);
 
   const energies = { ...raw.energies };
   for (const energy of ENERGIES) {
     const capacity = Math.max(10, INITIAL_CAPACITY[energy] + storage[energy]);
     const unlocked = energies[energy].unlocked;
+    const demoProduction = raw.mode === 'demo' && unlocked ? raw.demoGeneratorPower : 0;
     energies[energy] = {
       ...energies[energy],
       capacity,
       stock: Math.min(energies[energy].stock, capacity),
-      productionPerSecond: production[energy],
+      productionPerSecond: production[energy] + demoProduction,
       consumptionPerSecond: Math.max(0, consumption[energy])
     };
   }
@@ -342,6 +393,14 @@ function applyEraTransition(state: GameState): GameState {
   for (const energy of nextEra.unlockedEnergies) {
     energies = revealEnergy(energies, energy);
   }
+  if (nextEra.entryStockDelta) {
+    energies = { ...energies };
+    for (const energy of ENERGIES) {
+      const gain = nextEra.entryStockDelta[energy] ?? 0;
+      if (!gain || !energies[energy].unlocked) continue;
+      energies[energy] = { ...energies[energy], stock: clamp(energies[energy].stock + gain, 0, energies[energy].capacity) };
+    }
+  }
   const baseConsumption = { ...state.baseConsumption };
   addRecord(baseConsumption, nextEra.entryConsumptionDelta, MODE_CONFIG[state.mode].milestoneImpactMultiplier);
   const pollutionVisible = state.pollutionVisible || nextEra.id === 'trente_glorieuses';
@@ -369,8 +428,22 @@ function completeConstruction(state: GameState, construction: Construction): Gam
   const purchasedUpgrades = { ...state.purchasedUpgrades };
   let nextState: GameState = state;
 
+  if (!isUpgrade(item) && construction.optionId === 'dismantle') {
+    const pollutionReduction = item.pollutionPerSecond ?? item.hiddenPollutionDebtPerSecond ?? 0;
+    nextState = {
+      ...state,
+      producersDismantled: state.producersDismantled + 1,
+      pollutionDismantled: { ...state.pollutionDismantled, [item.id]: (state.pollutionDismantled?.[item.id] ?? 0) + 1 },
+      pollutionRateOffset: (state.pollutionRateOffset ?? 0) - pollutionReduction,
+      pollution: Math.max(0, state.pollution - pollutionReduction * 25)
+    };
+    return deriveState(nextState);
+  }
+
   if (isUpgrade(item)) {
     purchasedUpgrades[item.id] = true;
+  } else if (item.kind === 'conversion') {
+    owned[item.id] = Math.min(item.maxQuantity ?? 1, (owned[item.id] ?? 0) + construction.quantity);
   } else {
     owned[item.id] = (owned[item.id] ?? 0) + construction.quantity;
     const upgradeIds = getActiveUpgradeIdsForTechnology(item, state);
@@ -401,14 +474,14 @@ function completeConstruction(state: GameState, construction: Construction): Gam
   return deriveState(nextState);
 }
 
-function tickState(state: GameState, dt: number): GameState {
+function tickState(state: GameState, dt: number, constructionDt = dt): GameState {
   if (state.phase === 'gameOver' || state.phase === 'final') return state;
 
   let next = deriveState(ageOwnedGenerations({ ...state, elapsedSeconds: state.elapsedSeconds + dt }, dt));
 
   const constructions: Construction[] = [];
   for (const construction of next.constructions) {
-    const updated = { ...construction, remainingSeconds: construction.remainingSeconds - dt };
+    const updated = { ...construction, remainingSeconds: construction.remainingSeconds - constructionDt };
     if (updated.remainingSeconds <= 0) {
       next = completeConstruction(next, construction);
     } else {
@@ -518,17 +591,18 @@ export function useGame(initialMode: GameMode) {
   const activeDocumentaryContext = useMemo(() => {
     if (!state.modalDocumentaryId) return null;
     const milestone = MILESTONES.find((candidate) => candidate.documentaryId === state.modalDocumentaryId);
-    if (milestone) return { consumptionDelta: milestone.consumptionDelta, unlockedItemNames: [] };
+    if (milestone) return { consumptionDelta: milestone.consumptionDelta, unlockedItems: [] };
     const era = ERAS.find((candidate) => candidate.documentaryId === state.modalDocumentaryId);
     if (era) {
       return {
         consumptionDelta: era.entryConsumptionDelta,
-        unlockedItemNames: era.technologiesUnlocked
-          .map((itemId) => itemById.get(itemId)?.name)
-          .filter((name): name is string => Boolean(name))
+        unlockedItems: era.technologiesUnlocked
+          .map((itemId) => itemById.get(itemId))
+          .filter((item): item is Item => Boolean(item))
+          .map((item) => ({ name: item.name, description: item.description, asset: item.asset }))
       };
     }
-    return { consumptionDelta: {}, unlockedItemNames: [] };
+    return { consumptionDelta: {}, unlockedItems: [] };
   }, [state.modalDocumentaryId]);
 
   const click = useCallback(() => {
@@ -543,6 +617,25 @@ export function useGame(initialMode: GameMode) {
       }
       const pollution = current.eraIndex === ERAS.length - 1 && current.purchasedUpgrades.smart_grid
         ? Math.max(0, current.pollution - 0.03 * multiplier)
+        : current.pollution;
+      return { ...current, energies, pollution };
+    });
+  }, []);
+
+  const testClickMany = useCallback((quantity: number) => {
+    if (!import.meta.env.DEV) return;
+    setState((current) => {
+      const era = ERAS[current.eraIndex];
+      const multiplier = computeClickMultiplier(current);
+      const clicks = Math.max(0, Math.floor(quantity));
+      const energies = { ...current.energies };
+      for (const energy of ENERGIES) {
+        const gain = era.clickAction.gain[energy] ?? 0;
+        if (!gain || !energies[energy].unlocked) continue;
+        energies[energy] = { ...energies[energy], stock: clamp(energies[energy].stock + gain * multiplier * clicks, 0, energies[energy].capacity) };
+      }
+      const pollution = current.eraIndex === ERAS.length - 1 && current.purchasedUpgrades.smart_grid
+        ? Math.max(0, current.pollution - 0.03 * multiplier * clicks)
         : current.pollution;
       return { ...current, energies, pollution };
     });
@@ -582,19 +675,23 @@ export function useGame(initialMode: GameMode) {
     setState((current) => {
       const tech = techById.get(technologyId);
       if (!tech || !tech.removable || (current.owned[technologyId] ?? 0) <= 0) return current;
-      const generations = [...(current.ownedGenerations[technologyId] ?? [])];
-      for (let i = generations.length - 1; i >= 0; i -= 1) {
-        if (generations[i].quantity <= 0) continue;
-        generations[i] = { ...generations[i], quantity: generations[i].quantity - 1 };
-        break;
-      }
-      return deriveState({
-        ...current,
-        owned: { ...current.owned, [technologyId]: (current.owned[technologyId] ?? 0) - 1 },
-        ownedGenerations: { ...current.ownedGenerations, [technologyId]: generations.filter((generation) => generation.quantity > 0) },
-        producersDismantled: current.producersDismantled + 1,
-        modalDocumentaryId: current.modalDocumentaryId
-      });
+      const pending = current.constructions
+        .filter((construction) => construction.technologyId === technologyId && construction.optionId === 'dismantle')
+        .reduce((total, construction) => total + construction.quantity, 0);
+      const alreadyDismantled = current.pollutionDismantled?.[technologyId] ?? 0;
+      if ((current.owned[technologyId] ?? 0) - alreadyDismantled - pending <= 0) return current;
+      if (current.constructions.length >= getAvailableSlots(current)) return current;
+      const totalSeconds = Math.max(1, DISMANTLE_BUILD_TIME_SECONDS * MODE_CONFIG[current.mode].buildTimeMultiplier);
+      const construction: Construction = {
+        id: `${technologyId}-dismantle-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        technologyId,
+        optionId: 'dismantle',
+        quantity: 1,
+        remainingSeconds: totalSeconds,
+        totalSeconds,
+        startedAt: current.elapsedSeconds
+      };
+      return { ...current, constructions: [...current.constructions, construction] };
     });
   }, []);
 
@@ -618,28 +715,21 @@ export function useGame(initialMode: GameMode) {
 
   const reset = useCallback(() => {
     window.localStorage.removeItem(SAVE_KEY);
-    setState(deriveState(makeInitialState(initialMode)));
-  }, [initialMode]);
+    setState((current) => deriveState(makeInitialState(current.mode)));
+  }, []);
 
-  const refuelAndContinue = useCallback(() => {
-    setState((current) => {
-      const energies = { ...current.energies };
-      for (const energy of ENERGIES) {
-        if (!energies[energy].unlocked) continue;
-        energies[energy] = {
-          ...energies[energy],
-          stock: Math.max(energies[energy].stock, energies[energy].capacity * 0.3),
-          crisisCountdown: null
-        };
-      }
-      return {
-        ...current,
-        phase: current.phase === 'gameOver' ? 'milestone' : current.phase,
-        energies,
-        pollution: Math.min(current.pollution, 65),
-        pollutionCountdown: null
-      };
-    });
+  const resetMode = useCallback((mode: GameMode) => {
+    window.localStorage.removeItem(SAVE_KEY);
+    setState(deriveState(makeInitialState(mode)));
+  }, []);
+
+  const setDemoGeneratorPower = useCallback((power: number) => {
+    setState((current) => deriveState({ ...current, demoGeneratorPower: clamp(power, 0, 500) }));
+  }, []);
+
+  const testTick = useCallback((seconds: number) => {
+    if (!import.meta.env.DEV) return;
+    setState((current) => tickState(current, Math.max(0, seconds)));
   }, []);
 
   const debug = useMemo(() => ({
@@ -648,13 +738,7 @@ export function useGame(initialMode: GameMode) {
       energies[energy] = { ...energies[energy], stock: clamp(energies[energy].stock + amount, 0, energies[energy].capacity) };
       return { ...current, energies };
     }),
-    refuel: () => setState((current) => {
-      const energies = { ...current.energies };
-      for (const energy of ENERGIES) {
-        if (energies[energy].unlocked) energies[energy] = { ...energies[energy], stock: energies[energy].capacity * 0.3, crisisCountdown: null };
-      }
-      return { ...current, energies, pollution: Math.min(current.pollution, 65), pollutionCountdown: null };
-    }),
+    clearPollution: () => setState((current) => ({ ...current, pollution: 0, pollutionCountdown: null })),
     nextMilestone: () => setState((current) => current.phase === 'milestone' ? applyMilestone({ ...current, phaseRemainingSeconds: 0 }) : current),
     nextEra: () => setState((current) => current.phase === 'transition' ? applyEraTransition(current) : ({ ...current, phase: 'transition', phaseRemainingSeconds: 1 })),
     setSpeed: (speed: number) => setState((current) => ({ ...current, speed })),
@@ -673,6 +757,36 @@ export function useGame(initialMode: GameMode) {
     return result;
   }, [currentEra, state]);
 
+  const actions = {
+      click,
+      purchase,
+      dismantle,
+      closeDocumentary,
+      cycleSpeed,
+      togglePause,
+      reset,
+      resetMode,
+      setDemoGeneratorPower,
+      debug,
+      testTick,
+      testClickMany,
+      getOptionCost,
+      canAfford: (cost: Partial<Record<Energy, number>>) => canAfford(state, cost)
+    };
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    window.__ENERGIE_CLICKER_TEST__ = {
+      state,
+      currentEra,
+      availableItems,
+      actions
+    };
+    return () => {
+      delete window.__ENERGIE_CLICKER_TEST__;
+    };
+  }, [state, currentEra, availableItems, actions]);
+
   return {
     state,
     currentEra,
@@ -684,18 +798,6 @@ export function useGame(initialMode: GameMode) {
     activeDocumentaryContext,
     availableSlots: getAvailableSlots(state),
     clickYield,
-    actions: {
-      click,
-      purchase,
-      dismantle,
-      closeDocumentary,
-      cycleSpeed,
-      togglePause,
-      reset,
-      refuelAndContinue,
-      debug,
-      getOptionCost,
-      canAfford: (cost: Partial<Record<Energy, number>>) => canAfford(state, cost)
-    }
+    actions
   };
 }

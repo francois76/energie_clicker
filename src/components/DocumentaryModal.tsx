@@ -5,7 +5,7 @@ import { formatPower } from '../utils/format';
 
 export type DocumentaryContext = {
   consumptionDelta?: Partial<Record<Energy, number>>;
-  unlockedItemNames?: string[];
+  unlockedItems?: Array<{ name: string; description: string; asset: string }>;
 };
 
 export function RulesPanel() {
@@ -27,7 +27,7 @@ export function RulesPanel() {
 export function DocumentaryModal({ documentary, context, onClose }: { documentary: Documentary | null; context: DocumentaryContext | null; onClose: () => void }) {
   if (!documentary) return null;
   const enrichedDocumentary = DOCUMENTARY_DRAFTS[documentary.id] ?? documentary;
-  const unlockedItemNames = context?.unlockedItemNames ?? [];
+  const unlockedItems = context?.unlockedItems ?? [];
   return (
     <div className="modal-backdrop documentary-backdrop" onMouseDown={onClose}>
       <div role="dialog" aria-modal="true" className="documentary-modal" onMouseDown={(event) => event.stopPropagation()}>
@@ -38,17 +38,27 @@ export function DocumentaryModal({ documentary, context, onClose }: { documentar
           {context?.consumptionDelta && Object.keys(context.consumptionDelta).length > 0 && (
             <section>
               <h3>Consommations</h3>
-              <ul>
+              <div className="impact-pills">
                 {Object.entries(context.consumptionDelta).map(([energy, value]) => (
-                  <li key={energy}>{ENERGY_META[energy as Energy].label}: {value! >= 0 ? '+' : ''}{formatPower(value ?? 0)}</li>
+                  <span className={`impact-pill ${(value ?? 0) > 0 ? 'danger-pill' : 'benefit-pill'}`} key={energy} style={{ ['--accent' as string]: `var(${ENERGY_META[energy as Energy].cssVar})` }}>
+                    <img src={ENERGY_META[energy as Energy].icon} alt="" />
+                    {value! >= 0 ? '+' : ''}{formatPower(value ?? 0)}
+                  </span>
                 ))}
-              </ul>
+              </div>
             </section>
           )}
-          {unlockedItemNames.length > 0 && (
+          {unlockedItems.length > 0 && (
             <section>
               <h3>Déblocages</h3>
-              <p>{unlockedItemNames.join(' · ')}</p>
+              <ul className="unlock-detail-list">
+                {unlockedItems.map((item) => (
+                  <li key={item.name}>
+                    <img src={item.asset} alt="" />
+                    <span><strong>{item.name}</strong> : {item.description}</span>
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
           <section>

@@ -21,7 +21,7 @@ function formatTime(seconds: number) {
   return `${min} min ${String(sec).padStart(2, '0')} s`;
 }
 
-export function EndOverlay({ state, onRefuel, onReset }: { state: EndState; onRefuel: () => void; onReset: () => void }) {
+export function EndOverlay({ state, onReset }: { state: EndState; onReset: () => void }) {
   if (state.phase !== 'gameOver' && state.phase !== 'final') return null;
 
   const isFinal = state.phase === 'final';
@@ -51,9 +51,6 @@ export function EndOverlay({ state, onRefuel, onReset }: { state: EndState; onRe
         </div>
         <div className="end-actions">
           <button className="primary" onClick={onReset}>Recommencer</button>
-          {!isFinal && state.mode === 'demo' && (
-            <button className="secondary" onClick={onRefuel}>Refuel et continuer</button>
-          )}
         </div>
       </dialog>
     </div>

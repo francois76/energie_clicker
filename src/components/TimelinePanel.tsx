@@ -1,6 +1,8 @@
 import type { Energy, EnergyState, Era, GamePhase, Milestone } from '../types';
-import { ENERGY_META } from '../data/gameData';
+import { ALL_ITEMS, ENERGY_META } from '../data/gameData';
 import { formatCountdown, formatPower } from '../utils/format';
+
+const itemById = new Map(ALL_ITEMS.map((item) => [item.id, item]));
 
 type Props = {
   era: Era;
@@ -30,7 +32,12 @@ export function TimelinePanel({ era, nextEra, milestone, isMilestoneVisible, pha
           <div className="impact-grid">
             <div>
               <strong>Déblocages</strong>
-              <p>{nextEra.unlockedEnergies.map((e) => ENERGY_META[e].short).join(' · ')}</p>
+              <div className="unlock-icons">
+                {nextEra.technologiesUnlocked.map((itemId) => {
+                  const item = itemById.get(itemId);
+                  return item ? <img key={itemId} src={item.asset} alt={item.name} title={item.name} /> : null;
+                })}
+              </div>
             </div>
             <div>
               <strong>Slots</strong>
@@ -51,7 +58,7 @@ export function TimelinePanel({ era, nextEra, milestone, isMilestoneVisible, pha
               const current = energies[e];
               if (!current.unlocked && (delta ?? 0) <= 0) return null;
               return (
-                <span className="impact-pill" key={energy} style={{ ['--accent' as string]: `var(${ENERGY_META[e].cssVar})` }}>
+                <span className={`impact-pill ${(delta ?? 0) > 0 ? 'danger-pill' : 'benefit-pill'}`} key={energy} style={{ ['--accent' as string]: `var(${ENERGY_META[e].cssVar})` }}>
                   <img src={ENERGY_META[e].icon} alt="" />
                   {delta! >= 0 ? '+' : ''}{formatPower(delta ?? 0)}
                 </span>

@@ -24,6 +24,7 @@ export function ConstructionPanel({ constructions }: { constructions: Constructi
                 <img src={item?.asset} alt="" />
                 <div className="construction-content">
                   <div className="construction-line">
+                    {construction.optionId === 'dismantle' && <span>Démantèlement</span>}
                     <span>{formatCountdown(construction.remainingSeconds)}</span>
                   </div>
                   <div className="meter"><span style={{ width: `${Math.max(2, progress * 100)}%` }} /></div>
